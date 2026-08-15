@@ -4,6 +4,7 @@ import {
   subscribeToTravelMetrics,
 } from '../data/travelMetricsStore'
 import { getBodyLabel, TRANSLATIONS } from '../i18n/translations'
+import { formatDuration } from '../utils/formatDuration'
 
 function formatDistance(distanceKm, language) {
   if (!Number.isFinite(distanceKm)) return '—'
@@ -27,18 +28,6 @@ function formatSpeed(speedKmS, language) {
   return `${formatter.format(Math.max(0, speedKmS))} km/s`
 }
 
-function formatDuration(durationSeconds) {
-  if (!Number.isFinite(durationSeconds)) return '—'
-
-  const roundedSeconds = Math.max(0, Math.ceil(durationSeconds))
-  if (roundedSeconds < 60) return `${roundedSeconds} s`
-
-  const hours = Math.floor(roundedSeconds / 3600)
-  const minutes = Math.floor((roundedSeconds % 3600) / 60)
-  const seconds = roundedSeconds % 60
-  if (hours > 0) return `${hours} h ${minutes} min`
-  return `${minutes} min ${seconds.toString().padStart(2, '0')} s`
-}
 
 export default function DistanceCounter({ language }) {
   const metrics = useSyncExternalStore(
@@ -61,7 +50,7 @@ export default function DistanceCounter({ language }) {
         </div>
         <div>
           <dt>{text.timeRemaining}</dt>
-          <dd>{formatDuration(metrics.remainingDurationSeconds)}</dd>
+          <dd>{formatDuration(metrics.remainingDurationSeconds, language)}</dd>
         </div>
         <div>
           <dt>{text.speed}</dt>
@@ -86,6 +75,7 @@ export default function DistanceCounter({ language }) {
     </div>
   )
 }
+
 
 
 

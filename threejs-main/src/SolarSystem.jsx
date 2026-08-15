@@ -1,8 +1,10 @@
 import { OrbitControls, useTexture } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
 import CameraRig from './components/CameraRig'
 import { CelestialBody, OrbitPath } from './components/CelestialBody'
 import SceneEnvironment from './components/SceneEnvironment'
+import TravelShip from './components/TravelShip'
 import { CELESTIAL_BODIES, ORBITING_BODIES, TEXTURE_PATHS } from './data/celestialBodies'
 
 export default function SolarSystem({
@@ -18,6 +20,11 @@ export default function SolarSystem({
   const textures = useTexture(TEXTURE_PATHS)
   const bodyRefs = useRef(Object.create(null))
   const controlsRef = useRef()
+  const simulationTimeRef = useRef(0)
+
+  useFrame((_, delta) => {
+    simulationTimeRef.current += delta * settings.timeScale
+  }, -100)
 
   return (
     <>
@@ -30,9 +37,11 @@ export default function SolarSystem({
             body={body}
             textures={textures}
             bodyRefs={bodyRefs}
+            simulationTimeRef={simulationTimeRef}
             settings={settings}
             isSelected={body.name === selectedBody}
             isFocused={body.name === focusedBody}
+            isParentFocused={!body.parent || body.parent === focusedBody}
             interactionDisabled={travelling}
             language={language}
             onSelect={onSelect}
@@ -62,6 +71,14 @@ export default function SolarSystem({
         onTravellingChange={onTravellingChange}
         onTravelPreviewChange={onTravelPreviewChange}
       />
+      <TravelShip
+        bodyRefs={bodyRefs}
+        focusedBody={focusedBody}
+        simulationTimeRef={simulationTimeRef}
+        settings={settings}
+      />
     </>
   )
 }
+
+

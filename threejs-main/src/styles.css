@@ -163,7 +163,7 @@ canvas {
   border-bottom: 0;
 }
 
-.control-panel.is-collapsed .control-panel__header > div {
+.control-panel.is-collapsed .control-panel__title {
   display: none;
 }
 
@@ -186,7 +186,8 @@ canvas {
   letter-spacing: 0.025em;
 }
 
-.control-panel__collapse {
+.control-panel__collapse,
+.control-panel__sound {
   display: grid;
   flex: 0 0 auto;
   width: 2.25rem;
@@ -203,8 +204,32 @@ canvas {
   transition: border-color 150ms ease, background 150ms ease;
 }
 
+
+.control-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.control-panel__sound svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.control-panel__sound.is-active {
+  border-color: rgb(142 203 255 / 38%);
+  color: #8ecbff;
+  background: rgb(142 203 255 / 10%);
+}
 .control-panel__collapse:hover,
-.control-panel__collapse:focus-visible {
+.control-panel__collapse:focus-visible,
+.control-panel__sound:hover,
+.control-panel__sound:focus-visible {
   border-color: rgb(142 203 255 / 65%);
   background: rgb(142 203 255 / 15%);
   outline: none;
@@ -683,5 +708,6 @@ canvas {
     transition: none;
   }
 }
+
 
 

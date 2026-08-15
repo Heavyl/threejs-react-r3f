@@ -1,6 +1,6 @@
 export const DEFAULT_SYSTEM_SETTINGS = Object.freeze({
   timeScale: 600,
-  travelSpeedMultiplier: 100,
+  travelSpeedMultiplier: 1,
   globalScale: 1,
   showOrbits: true,
   orbitOpacity: 0.12,
@@ -11,4 +11,5 @@ export const DEFAULT_SYSTEM_SETTINGS = Object.freeze({
   sunLightIntensity: 3,
   backgroundIntensity: 1,
 })
+
 

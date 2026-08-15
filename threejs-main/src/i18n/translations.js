@@ -15,6 +15,7 @@ const BODY_LABELS = Object.freeze({
 
 function formatTimeScale(value, language) {
   if (value === 0) return language === 'fr' ? 'Pause' : 'Paused'
+  if (value === 1) return language === 'fr' ? 'Temps réel' : 'Real time'
 
   if (value < 60) return `${value.toFixed(0)} s/s`
   if (value < 3600) return `${(value / 60).toFixed(value < 600 ? 1 : 0)} min/s`
@@ -44,6 +45,8 @@ export const TRANSLATIONS = Object.freeze({
       title: 'Settings',
       open: 'Open settings',
       close: 'Collapse settings',
+      soundOn: 'Enable sound',
+      soundOff: 'Mute sound',
       movement: 'Motion',
       simulationSpeed: 'Time warp',
       timeScaleValue: (value) => formatTimeScale(value, 'en'),
@@ -87,6 +90,8 @@ export const TRANSLATIONS = Object.freeze({
       title: 'Réglages',
       open: 'Ouvrir les réglages',
       close: 'Réduire les réglages',
+      soundOn: 'Activer le son',
+      soundOff: 'Couper le son',
       movement: 'Mouvement',
       simulationSpeed: 'Accélération temporelle',
       timeScaleValue: (value) => formatTimeScale(value, 'fr'),
@@ -120,6 +125,8 @@ export const TRANSLATIONS = Object.freeze({
 export function getBodyLabel(bodyName, language) {
   return BODY_LABELS[bodyName]?.[language] ?? bodyName
 }
+
+
 
 
 

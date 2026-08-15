@@ -8,16 +8,177 @@ import {
 import { publishTravelMetrics } from '../data/travelMetricsStore'
 import { easeInOutCubic } from '../utils/orbit'
 
-const SPEED_OF_LIGHT_KM_S = 299792.458
-const MIN_BASE_TRAVEL_DURATION = 3
+const BASE_TRAVEL_SPEED_KM_S = 687000 / 3600
+const SOLAR_GRAVITATIONAL_PARAMETER_KM3_S2 = 1.32712440018e11
+const CENTRAL_GRAVITATIONAL_PARAMETERS = Object.freeze({
+  Earth: 398600.4418,
+  Mars: 42828.375214,
+})
+const TARGETING_DURATION = 0.65
+const ACCELERATION_DURATION = 2
+const DECELERATION_DURATION = 2
 const METRICS_UPDATE_INTERVAL = 0.1
 const PREVIEW_UPDATE_INTERVAL = 0.25
 const MIN_TRAVEL_FOCAL_LENGTH = 8
 const TRAVEL_FOCAL_RATIO = 0.28
-const TARGET_FOCUS_LEAD = 1.8
 
 function worldUnitsToKilometers(distance, globalScale) {
   return distance / globalScale / SCALE
+}
+
+function getSystemBody(body) {
+  return body?.parent ? BODY_BY_NAME.get(body.parent) : body
+}
+
+function getLocalOrbitRadius(body, systemBody) {
+  if (body.name === systemBody.name) return systemBody.radiusKm + 200
+  return body.semiMajorAxisKm
+}
+
+
+function getHeliocentricTransferRadius(systemBody) {
+  return systemBody.name === 'Sun'
+    ? systemBody.radiusKm
+    : systemBody.semiMajorAxisKm
+}
+
+function calculateHohmannDuration(departureId, targetId) {
+  const departureBody = BODY_BY_NAME.get(departureId)
+  const targetBody = BODY_BY_NAME.get(targetId)
+  if (!departureBody || !targetBody) return null
+
+  const departureSystem = getSystemBody(departureBody)
+  const targetSystem = getSystemBody(targetBody)
+  if (!departureSystem || !targetSystem) return null
+
+  let departureRadius
+  let targetRadius
+  let gravitationalParameter
+
+  if (departureSystem.name === targetSystem.name) {
+    gravitationalParameter = CENTRAL_GRAVITATIONAL_PARAMETERS[departureSystem.name]
+    if (!gravitationalParameter) return null
+    departureRadius = getLocalOrbitRadius(departureBody, departureSystem)
+    targetRadius = getLocalOrbitRadius(targetBody, targetSystem)
+  } else {
+    gravitationalParameter = SOLAR_GRAVITATIONAL_PARAMETER_KM3_S2
+    departureRadius = getHeliocentricTransferRadius(departureSystem)
+    targetRadius = getHeliocentricTransferRadius(targetSystem)
+    if (!departureRadius || !targetRadius) return null
+  }
+
+  const transferSemiMajorAxis = (departureRadius + targetRadius) * 0.5
+  return Math.PI * Math.sqrt(
+    transferSemiMajorAxis ** 3 / gravitationalParameter,
+  )
+}
+
+function calculateBaseTravelDuration(distanceKm, departureId, targetId) {
+  const speedLimitedDuration = distanceKm / BASE_TRAVEL_SPEED_KM_S
+  const hohmannDuration = calculateHohmannDuration(departureId, targetId)
+  return hohmannDuration
+    ? Math.max(hohmannDuration, speedLimitedDuration)
+    : speedLimitedDuration
+}
+
+function advanceTravelMotion(transition, delta, settings) {
+  const activeDelta = settings.timeScale > 0 ? delta : 0
+  const normalizedCruiseRate = (
+    settings.timeScale
+    * settings.travelSpeedMultiplier
+    / transition.physicalDuration
+  )
+  let speedFactor = 0
+
+  transition.phaseElapsed += activeDelta
+
+  if (transition.phase === 'targeting') {
+    const accelerationProgress = THREE.MathUtils.clamp(
+      transition.phaseElapsed / (TARGETING_DURATION + ACCELERATION_DURATION),
+      0,
+      1,
+    )
+    speedFactor = accelerationProgress
+    transition.motionProgress = Math.min(
+      0.999999,
+      transition.motionProgress + normalizedCruiseRate * speedFactor * activeDelta,
+    )
+    if (transition.phaseElapsed >= TARGETING_DURATION) {
+      transition.phase = 'accelerating'
+      transition.phaseElapsed -= TARGETING_DURATION
+    }
+  }
+
+  if (transition.phase === 'accelerating') {
+    speedFactor = THREE.MathUtils.clamp(
+      (TARGETING_DURATION + transition.phaseElapsed)
+        / (TARGETING_DURATION + ACCELERATION_DURATION),
+      0,
+      1,
+    )
+    transition.motionProgress = Math.min(
+      0.999999,
+      transition.motionProgress + normalizedCruiseRate * speedFactor * activeDelta,
+    )
+    if (transition.phaseElapsed >= ACCELERATION_DURATION) {
+      transition.phase = 'cruising'
+      transition.phaseElapsed -= ACCELERATION_DURATION
+      speedFactor = 1
+    }
+  }
+
+  if (transition.phase === 'cruising') {
+    speedFactor = 1
+    const decelerationDistance = normalizedCruiseRate * DECELERATION_DURATION * 0.5
+    transition.motionProgress = Math.min(
+      0.999999,
+      transition.motionProgress + normalizedCruiseRate * activeDelta,
+    )
+    if (1 - transition.motionProgress <= decelerationDistance) {
+      transition.phase = 'decelerating'
+      transition.phaseElapsed = 0
+      transition.decelerationStartProgress = transition.motionProgress
+    }
+  }
+
+  if (transition.phase === 'decelerating') {
+    const decelerationProgress = THREE.MathUtils.clamp(
+      transition.phaseElapsed / DECELERATION_DURATION,
+      0,
+      1,
+    )
+    speedFactor = 1 - decelerationProgress
+    const easedProgress = 1 - (1 - decelerationProgress) ** 2
+    transition.motionProgress = THREE.MathUtils.lerp(
+      transition.decelerationStartProgress,
+      1,
+      easedProgress,
+    )
+  }
+
+  const targetingProgress = transition.phase === 'targeting'
+    ? 1 - (
+        1 - THREE.MathUtils.clamp(transition.phaseElapsed / TARGETING_DURATION, 0, 1)
+      ) ** 3
+    : 1
+  const visualIntensity = transition.phase === 'targeting'
+    ? easeInOutCubic(speedFactor)
+    : transition.phase === 'accelerating'
+    ? easeInOutCubic(speedFactor)
+    : transition.phase === 'decelerating'
+      ? easeInOutCubic(speedFactor)
+      : transition.phase === 'cruising' ? 1 : 0
+
+  return {
+    progress: transition.motionProgress,
+    targetingProgress,
+    visualIntensity,
+    physicalNormalizedVelocity: settings.travelSpeedMultiplier
+      * speedFactor
+      / transition.physicalDuration,
+    hasArrived: transition.phase === 'decelerating'
+      && transition.phaseElapsed >= DECELERATION_DURATION,
+  }
 }
 
 export default function CameraRig({ selectedBody, focusedBody, bodyRefs, controlsRef, settings, onTravellingChange, onTravelPreviewChange }) {
@@ -29,7 +190,10 @@ export default function CameraRig({ selectedBody, focusedBody, bodyRefs, control
   const previewBody = useRef(null)
   const lastTarget = useMemo(() => new THREE.Vector3(), [])
   const targetPosition = useMemo(() => new THREE.Vector3(), [])
+  const departurePosition = useMemo(() => new THREE.Vector3(), [])
   const destination = useMemo(() => new THREE.Vector3(), [])
+  const movingStartPosition = useMemo(() => new THREE.Vector3(), [])
+  const targetDisplacement = useMemo(() => new THREE.Vector3(), [])
   const previewTargetPosition = useMemo(() => new THREE.Vector3(), [])
   const previewDestination = useMemo(() => new THREE.Vector3(), [])
   const previewViewOffset = useMemo(() => new THREE.Vector3(), [])
@@ -93,11 +257,8 @@ export default function CameraRig({ selectedBody, focusedBody, bodyRefs, control
             camera.position.distanceTo(previewDestination),
             settings.globalScale,
           )
-          const physicalDuration = distanceKm / SPEED_OF_LIGHT_KM_S
-          const durationSeconds = Math.max(
-            MIN_BASE_TRAVEL_DURATION,
-            physicalDuration / settings.travelSpeedMultiplier,
-          )
+          const physicalDuration = calculateBaseTravelDuration(distanceKm, focusedBody, selectedBody)
+          const durationSeconds = physicalDuration / settings.travelSpeedMultiplier
 
           previewBody.current = selectedBody
           previewElapsed.current = 0
@@ -110,6 +271,10 @@ export default function CameraRig({ selectedBody, focusedBody, bodyRefs, control
       onTravelPreviewChange(null)
     }
     if (previousFocus.current !== focusedBody) {
+      const departureId = previousFocus.current
+      const departureObject = bodyRefs.current[departureId]
+      if (departureObject) departureObject.getWorldPosition(departurePosition)
+      else departurePosition.copy(controls.target)
       previousFocus.current = focusedBody
       viewOffset.copy(camera.position).sub(controls.target)
       if (viewOffset.lengthSq() < 0.0001) viewOffset.set(1, 0.55, 1)
@@ -118,16 +283,17 @@ export default function CameraRig({ selectedBody, focusedBody, bodyRefs, control
       destination.copy(viewOffset).multiplyScalar(cameraDistance).add(targetPosition)
       const travelDistance = camera.position.distanceTo(destination)
       const totalDistanceKm = worldUnitsToKilometers(travelDistance, settings.globalScale)
-      const physicalDuration = totalDistanceKm / SPEED_OF_LIGHT_KM_S
-      const travelDurationSeconds = Math.max(
-        MIN_BASE_TRAVEL_DURATION,
-        physicalDuration / settings.travelSpeedMultiplier,
-      )
-
+      const physicalDuration = calculateBaseTravelDuration(totalDistanceKm, departureId, body.name)
       transition.current = {
+        departureId,
+        phase: 'targeting',
+        phaseElapsed: 0,
+        motionProgress: 0,
+        decelerationStartProgress: 0,
         progress: 0,
         physicalDuration,
         startPosition: camera.position.clone(),
+        startDeparturePosition: departurePosition.clone(),
         startTarget: controls.target.clone(),
         direction: viewOffset.clone(),
         totalDistanceKm,
@@ -137,11 +303,15 @@ export default function CameraRig({ selectedBody, focusedBody, bodyRefs, control
       publishTravelMetrics({
         hasJourney: true,
         active: true,
+        departureId,
         targetId: body.name,
+        targetingDurationSeconds: TARGETING_DURATION,
+        shipDockingDurationSeconds: TARGETING_DURATION + ACCELERATION_DURATION,
         totalDistanceKm,
         remainingDistanceKm: totalDistanceKm,
-        remainingDurationSeconds: travelDurationSeconds,
-        travelSpeedKmS: totalDistanceKm / travelDurationSeconds,
+        remainingDurationSeconds: physicalDuration / settings.travelSpeedMultiplier,
+        travelSpeedKmS: 0,
+        visualIntensity: 0,
         progress: 0,
       })
       controls.enabled = false
@@ -152,23 +322,23 @@ export default function CameraRig({ selectedBody, focusedBody, bodyRefs, control
     if (transition.current) {
       controls.enabled = false
       controls.enableDamping = false
-      const effectiveDuration = Math.max(
-        MIN_BASE_TRAVEL_DURATION,
-        transition.current.physicalDuration / settings.travelSpeedMultiplier,
-      )
-      transition.current.progress = Math.min(
-        transition.current.progress + delta / effectiveDuration,
-        1,
-      )
+      const motion = advanceTravelMotion(transition.current, delta, settings)
+      transition.current.progress = motion.progress
+      const visualIntensity = motion.visualIntensity
 
       destination.copy(transition.current.direction).multiplyScalar(cameraDistance).add(targetPosition)
-      const easedProgress = easeInOutCubic(transition.current.progress)
+      const departureObject = bodyRefs.current[transition.current.departureId]
+      if (departureObject) departureObject.getWorldPosition(departurePosition)
+      else departurePosition.copy(transition.current.startDeparturePosition)
+      targetDisplacement
+        .copy(departurePosition)
+        .sub(transition.current.startDeparturePosition)
+      movingStartPosition.copy(transition.current.startPosition).add(targetDisplacement)
       camera.position.lerpVectors(
-        transition.current.startPosition,
+        movingStartPosition,
         destination,
-        easedProgress,
+        motion.progress,
       )
-      const focalEnvelope = Math.sin(Math.PI * transition.current.progress) ** 1.5
       const travelFocalLength = Math.max(
         MIN_TRAVEL_FOCAL_LENGTH,
         transition.current.baseFocalLength * TRAVEL_FOCAL_RATIO,
@@ -177,19 +347,16 @@ export default function CameraRig({ selectedBody, focusedBody, bodyRefs, control
         THREE.MathUtils.lerp(
           transition.current.baseFocalLength,
           travelFocalLength,
-          focalEnvelope,
+          visualIntensity,
         ),
-      )
-      const targetProgress = easeInOutCubic(
-        Math.min(transition.current.progress * TARGET_FOCUS_LEAD, 1),
       )
       controls.target.lerpVectors(
         transition.current.startTarget,
         targetPosition,
-        targetProgress,
+        motion.targetingProgress,
       )
 
-      const hasArrived = transition.current.progress >= 1
+      const hasArrived = motion.hasArrived
       if (hasArrived) camera.position.copy(destination)
       controls.update()
 
@@ -201,8 +368,15 @@ export default function CameraRig({ selectedBody, focusedBody, bodyRefs, control
           active: !hasArrived,
           remainingDurationSeconds: hasArrived
             ? 0
-            : Math.max(0, (1 - transition.current.progress) * effectiveDuration),
-          travelSpeedKmS: transition.current.totalDistanceKm / effectiveDuration,
+            : Math.max(
+                0,
+                (1 - motion.progress)
+                  * transition.current.physicalDuration
+                  / settings.travelSpeedMultiplier,
+              ),
+          travelSpeedKmS: transition.current.totalDistanceKm
+            * motion.physicalNormalizedVelocity,
+          visualIntensity: hasArrived ? 0 : visualIntensity,
           remainingDistanceKm: hasArrived
             ? 0
             : worldUnitsToKilometers(camera.position.distanceTo(destination), settings.globalScale),
@@ -231,6 +405,13 @@ export default function CameraRig({ selectedBody, focusedBody, bodyRefs, control
 
   return null
 }
+
+
+
+
+
+
+
 
 
 

@@ -34,34 +34,51 @@ function ToggleControl({ id, label, checked, onChange }) {
   )
 }
 
-export default function ControlPanel({ language, settings, onSettingChange, onReset }) {
+export default function ControlPanel({ language, settings, onSettingChange, onReset, soundEnabled, onSoundToggle }) {
   const [collapsed, setCollapsed] = useState(true)
   const text = TRANSLATIONS[language].panel
 
   return (
     <aside className={`control-panel${collapsed ? ' is-collapsed' : ''}`} aria-label={text.ariaLabel}>
       <header className="control-panel__header">
-        <div>
+        <div className="control-panel__title">
           <p className="control-panel__eyebrow">{text.eyebrow}</p>
           <h2>{text.title}</h2>
         </div>
-        <button
-          className="control-panel__collapse"
-          type="button"
-          aria-expanded={!collapsed}
-          aria-label={collapsed ? text.open : text.close}
-          onClick={() => setCollapsed((value) => !value)}
-        >
-          {collapsed ? '☰' : '×'}
-        </button>
+        <div className="control-panel__actions">
+          <button
+            className={`control-panel__sound${soundEnabled ? ' is-active' : ''}`}
+            type="button"
+            aria-pressed={soundEnabled}
+            aria-label={soundEnabled ? text.soundOff : text.soundOn}
+            title={soundEnabled ? text.soundOff : text.soundOn}
+            onClick={onSoundToggle}
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M4 9h4l5-4v14l-5-4H4z" />
+              {soundEnabled
+                ? <path d="M16 8c1.3 1 2 2.3 2 4s-.7 3-2 4M19 5c2.1 1.8 3 4.1 3 7s-.9 5.2-3 7" />
+                : <path d="m16 9 5 6m0-6-5 6" />}
+            </svg>
+          </button>
+          <button
+            className="control-panel__collapse"
+            type="button"
+            aria-expanded={!collapsed}
+            aria-label={collapsed ? text.open : text.close}
+            onClick={() => setCollapsed((value) => !value)}
+          >
+            {collapsed ? '☰' : '×'}
+          </button>
+        </div>
       </header>
 
       {!collapsed && (
         <div className="control-panel__content">
           <fieldset>
             <legend>{text.movement}</legend>
-            <RangeControl id="time-scale" label={text.simulationSpeed} value={settings.timeScale} min={0} max={31536000} step={600} formatValue={text.timeScaleValue} onChange={(value) => onSettingChange('timeScale', value)} />
-            <RangeControl id="travel-speed" label={text.travelAcceleration} value={settings.travelSpeedMultiplier} min={1} max={200} step={1} formatValue={(value) => `×${value.toFixed(0)}`} onChange={(value) => onSettingChange('travelSpeedMultiplier', value)} />
+            <RangeControl id="time-scale" label={text.simulationSpeed} value={settings.timeScale} min={0} max={86400} step={1} formatValue={text.timeScaleValue} onChange={(value) => onSettingChange('timeScale', value)} />
+            <RangeControl id="travel-speed" label={text.travelAcceleration} value={settings.travelSpeedMultiplier} min={1} max={10000} step={1} formatValue={(value) => `×${value.toFixed(0)}`} onChange={(value) => onSettingChange('travelSpeedMultiplier', value)} />
           </fieldset>
 
           <fieldset>
@@ -87,6 +104,10 @@ export default function ControlPanel({ language, settings, onSettingChange, onRe
     </aside>
   )
 }
+
+
+
+
 
 
 

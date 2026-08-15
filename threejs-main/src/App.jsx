@@ -1,11 +1,14 @@
 import { useProgress } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Suspense, useEffect, useRef, useState } from 'react'
+import { useSolarAudio } from './audio/useSolarAudio'
 import ControlPanel from './components/ControlPanel'
 import DistanceCounter from './components/DistanceCounter'
+import TravelDistortion from './components/TravelDistortion'
 import { DEFAULT_SYSTEM_SETTINGS } from './config/systemSettings'
 import { getBodyLabel, TRANSLATIONS } from './i18n/translations'
 import SolarSystem from './SolarSystem'
+import { formatDuration } from './utils/formatDuration'
 
 const MIN_LOADING_DURATION_MS = 3000
 
@@ -56,27 +59,19 @@ function formatPreviewDistance(distanceKm, language) {
   return `${formatter.format(Math.max(0, distanceKm))} km`
 }
 
-function formatPreviewDuration(durationSeconds) {
-  const roundedSeconds = Math.max(0, Math.round(durationSeconds))
-  if (roundedSeconds < 60) return `${roundedSeconds} s`
-
-  const hours = Math.floor(roundedSeconds / 3600)
-  const minutes = Math.floor((roundedSeconds % 3600) / 60)
-  const seconds = roundedSeconds % 60
-  if (hours > 0) return `${hours} h ${minutes} min`
-  return `${minutes} min ${seconds.toString().padStart(2, '0')} s`
-}
 
 export default function App() {
   const [language, setLanguage] = useState('en')
   const [selectedBody, setSelectedBody] = useState('Earth')
   const [focusedBody, setFocusedBody] = useState('Earth')
   const [travelling, setTravelling] = useState(false)
+  const [soundEnabled, setSoundEnabled] = useState(true)
   const [travelPreview, setTravelPreview] = useState(null)
   const [sceneRendered, setSceneRendered] = useState(false)
   const [minimumLoadingElapsed, setMinimumLoadingElapsed] = useState(false)
   const [settings, setSettings] = useState({ ...DEFAULT_SYSTEM_SETTINGS })
   const { progress } = useProgress()
+  const ensureAudio = useSolarAudio({ enabled: soundEnabled, travelling })
 
   useEffect(() => {
     document.documentElement.lang = language
@@ -94,6 +89,11 @@ export default function App() {
   }
 
   const resetSettings = () => setSettings({ ...DEFAULT_SYSTEM_SETTINGS })
+
+  const toggleSound = () => {
+    if (!soundEnabled) ensureAudio()
+    setSoundEnabled((current) => !current)
+  }
 
   const selectBody = (bodyName) => {
     if (travelling) return
@@ -130,6 +130,7 @@ export default function App() {
             onTravelPreviewChange={setTravelPreview}
           />
           <SceneReady onReady={() => setSceneRendered(true)} />
+          <TravelDistortion />
         </Suspense>
       </Canvas>
 
@@ -150,6 +151,8 @@ export default function App() {
         settings={settings}
         onSettingChange={updateSetting}
         onReset={resetSettings}
+        soundEnabled={soundEnabled}
+        onSoundToggle={toggleSound}
       />
 
       <section className="hud" aria-live="polite">
@@ -162,7 +165,7 @@ export default function App() {
                 ? text.targetHint(
                     selectedLabel,
                     formatPreviewDistance(travelPreview.distanceKm, language),
-                    formatPreviewDuration(travelPreview.durationSeconds),
+                    formatDuration(travelPreview.durationSeconds, language),
                   )
                 : text.targetCalculating(selectedLabel)
               : text.selectionHint}
@@ -173,6 +176,10 @@ export default function App() {
     </main>
   )
 }
+
+
+
+
 
 
 

@@ -5,11 +5,21 @@ const ORBIT_PATH_SEGMENTS = 4096
 export function setOrbitalPosition(target, body, elapsedTime, parentPosition) {
   if (!body.orbitRadius) return target.set(0, 0, 0)
 
-  const angle = body.phase + elapsedTime * body.orbitalAngularSpeed
+  const meanAnomaly = body.phase + elapsedTime * body.orbitalAngularSpeed
+  const eccentricity = body.eccentricity ?? 0
+  let eccentricAnomaly = meanAnomaly
+  for (let iteration = 0; iteration < 6; iteration += 1) {
+    eccentricAnomaly -= (
+      eccentricAnomaly - eccentricity * Math.sin(eccentricAnomaly) - meanAnomaly
+    ) / (1 - eccentricity * Math.cos(eccentricAnomaly))
+  }
+
   target.set(
-    Math.cos(angle) * body.orbitRadius,
+    (Math.cos(eccentricAnomaly) - eccentricity) * body.orbitRadius,
     0,
-    Math.sin(angle) * body.orbitRadius,
+    Math.sin(eccentricAnomaly)
+      * body.orbitRadius
+      * Math.sqrt(1 - eccentricity * eccentricity),
   )
   target.applyAxisAngle(ORBIT_TILT_AXIS, THREE.MathUtils.degToRad(body.planeTilt || 0))
 
@@ -18,13 +28,15 @@ export function setOrbitalPosition(target, body, elapsedTime, parentPosition) {
 
 export function createOrbitGeometry(body, segments = ORBIT_PATH_SEGMENTS) {
   const positions = new Float32Array((segments + 1) * 3)
+  const eccentricity = body.eccentricity ?? 0
+  const semiMinorAxis = body.orbitRadius * Math.sqrt(1 - eccentricity * eccentricity)
 
   for (let index = 0; index <= segments; index += 1) {
     const angle = (index / segments) * Math.PI * 2
     const offset = index * 3
-    positions[offset] = Math.cos(angle) * body.orbitRadius
+    positions[offset] = (Math.cos(angle) - eccentricity) * body.orbitRadius
     positions[offset + 1] = 0
-    positions[offset + 2] = Math.sin(angle) * body.orbitRadius
+    positions[offset + 2] = Math.sin(angle) * semiMinorAxis
   }
 
   const geometry = new THREE.BufferGeometry()

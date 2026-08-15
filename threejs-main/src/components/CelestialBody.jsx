@@ -2,6 +2,7 @@ import { Html } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
+import { getTravelMetricsSnapshot } from '../data/travelMetricsStore'
 import { getBodyLabel } from '../i18n/translations'
 import { createOrbitGeometry, setOrbitalPosition } from '../utils/orbit'
 
@@ -50,11 +51,21 @@ function SaturnRings({ texture, radius }) {
 
 export function OrbitPath({ body, bodyRefs, settings }) {
   const orbitRef = useRef()
+  const materialRef = useRef()
   const geometry = useMemo(() => createOrbitGeometry(body), [body])
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     const parent = body.parent ? bodyRefs.current[body.parent] : null
     if (parent) orbitRef.current.position.copy(parent.position)
+
+    const { visualIntensity } = getTravelMetricsSnapshot()
+    const targetOpacity = settings.orbitOpacity * (1 - visualIntensity)
+    materialRef.current.opacity = THREE.MathUtils.damp(
+      materialRef.current.opacity,
+      targetOpacity,
+      10,
+      delta,
+    )
   })
 
   useEffect(() => () => geometry.dispose(), [geometry])
@@ -66,7 +77,7 @@ export function OrbitPath({ body, bodyRefs, settings }) {
       visible={settings.showOrbits}
       rotation={[0, 0, THREE.MathUtils.degToRad(body.planeTilt || 0)]}
     >
-      <lineBasicMaterial color="#ffffff" transparent opacity={settings.orbitOpacity} />
+      <lineBasicMaterial ref={materialRef} color={body.orbitColor} transparent opacity={settings.orbitOpacity} />
     </line>
   )
 }
@@ -75,16 +86,17 @@ export function CelestialBody({
   body,
   textures,
   bodyRefs,
+  simulationTimeRef,
   settings,
   isSelected,
   isFocused,
+  isParentFocused,
   interactionDisabled,
   language,
   onSelect,
 }) {
   const bodyRef = useRef()
   const surfaceRef = useRef()
-  const simulationTime = useRef(0)
   const orbitalPosition = useMemo(() => new THREE.Vector3(), [])
 
   useLayoutEffect(() => {
@@ -94,14 +106,13 @@ export function CelestialBody({
     }
   }, [body.name, bodyRefs])
 
-  useFrame((_, delta) => {
-    simulationTime.current += delta * settings.timeScale
+  useFrame(() => {
     const parent = body.parent ? bodyRefs.current[body.parent] : null
-    setOrbitalPosition(orbitalPosition, body, simulationTime.current, parent?.position)
+    setOrbitalPosition(orbitalPosition, body, simulationTimeRef.current, parent?.position)
     bodyRef.current.position.copy(orbitalPosition)
 
     if (body.rotationAngularSpeed) {
-      surfaceRef.current.rotation.y += body.rotationAngularSpeed * settings.timeScale * delta
+      surfaceRef.current.rotation.y = simulationTimeRef.current * body.rotationAngularSpeed
     }
   })
 
@@ -141,7 +152,7 @@ export function CelestialBody({
         )}
       </group>
 
-      {settings.showLabels && (
+      {settings.showLabels && isParentFocused && (
         <Html
           center
           position={[0, labelHeight, 0]}
@@ -167,3 +178,7 @@ export function CelestialBody({
     </group>
   )
 }
+
+
+
+

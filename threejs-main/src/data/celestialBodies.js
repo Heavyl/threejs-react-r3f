@@ -1,19 +1,35 @@
 export const SCALE = 1 / 10000
 export const ASTRONOMICAL_UNIT_KM = 149597870.7
+const ASSET_BASE_URL = import.meta.env.BASE_URL
+
+const ORBIT_COLORS = Object.freeze({
+  Mercury: '#ff3b30',
+  Venus: '#ff9f0a',
+  Earth: '#2f80ff',
+  Moon: '#8ecbff',
+  Mars: '#ffd60a',
+  Deimos: '#ffd180',
+  Phobos: '#ffab67',
+  Jupiter: '#34c759',
+  Saturn: '#32ade6',
+  Uranus: '#5856d6',
+  Neptune: '#af52de',
+  Pluto: '#e946ef',
+})
 
 const rawBodies = [
-  { name: 'Sun', radiusKm: 695700, texture: 'sun', rotationSurfaceSpeedKmS: 1.997, phase: 0, emissive: true },
-  { name: 'Mercury', radiusKm: 2439.7, texture: 'mercury', orbitAu: 0.387098, orbitalSpeedKmS: 47.362, planeTilt: 7, axialTilt: 0.035, rotationSurfaceSpeedKmS: 0.003, phase: 0.4 },
-  { name: 'Venus', radiusKm: 6051.8, texture: 'venus', orbitAu: 0.723332, orbitalSpeedKmS: 35.025, planeTilt: 3.4, axialTilt: 177.3, rotationSurfaceSpeedKmS: 0.0018, phase: 1.1, atmosphere: 'venus' },
-  { name: 'Earth', radiusKm: 6371, texture: 'earth', orbitAu: 1, orbitalSpeedKmS: 29.78, planeTilt: 0, axialTilt: 23.44, rotationSurfaceSpeedKmS: 0.4651, phase: 2, atmosphere: 'earth' },
-  { name: 'Moon', radiusKm: 1737.4, texture: 'moon', parent: 'Earth', semiMajorAxisKm: 384400, orbitalSpeedKmS: 1.022, planeTilt: 5.145, axialTilt: 6.68, rotationSurfaceSpeedKmS: 0.004627, phase: 0.6 },
-  { name: 'Mars', radiusKm: 3389.5, texture: 'mars', orbitAu: 1.523679, orbitalSpeedKmS: 24.13, planeTilt: 1.85, axialTilt: 25.19, rotationSurfaceSpeedKmS: 0.241, phase: 2.8, atmosphere: 'mars' },
-  { name: 'Deimos', radiusKm: 6.2, parent: 'Mars', semiMajorAxisKm: 23463.2, orbitalSpeedKmS: 1.351, planeTilt: 1.79, rotationSurfaceSpeedKmS: 0.000357, phase: 1.8 },
-  { name: 'Phobos', radiusKm: 11.267, parent: 'Mars', semiMajorAxisKm: 9376, orbitalSpeedKmS: 2.138, planeTilt: 1.08, rotationSurfaceSpeedKmS: 0.00257, phase: 3.2 },
-  { name: 'Jupiter', radiusKm: 69911, texture: 'jupiter', orbitAu: 5.2044, orbitalSpeedKmS: 13.058, planeTilt: 1.304, axialTilt: 3.13, rotationSurfaceSpeedKmS: 12.6, phase: 3.7 },
-  { name: 'Saturn', radiusKm: 58232, texture: 'saturn', orbitAu: 9.5826, orbitalSpeedKmS: 9.6725, planeTilt: 2.485, axialTilt: 26.73, rotationSurfaceSpeedKmS: 9.87, phase: 4.5, rings: true },
-  { name: 'Uranus', radiusKm: 25362, texture: 'uranus', orbitAu: 19.2184, orbitalSpeedKmS: 6.835, planeTilt: 0.773, axialTilt: 97.77, rotationSurfaceSpeedKmS: 2.59, phase: 5.1 },
-  { name: 'Neptune', radiusKm: 24622, texture: 'neptune', orbitAu: 30.11, orbitalSpeedKmS: 5.43, planeTilt: 1.77, axialTilt: 28.32, rotationSurfaceSpeedKmS: 2.68, phase: 5.8 },
+  { name: 'Sun', radiusKm: 695700, texture: 'sun', rotationPeriodHours: 609.12, phase: 0, emissive: true },
+  { name: 'Mercury', radiusKm: 2439.7, texture: 'mercury', orbitAu: 0.387098, orbitalPeriodDays: 87.9691, eccentricity: 0.20563593, planeTilt: 7, axialTilt: 0.035, rotationPeriodHours: 1407.6, phase: 0.4 },
+  { name: 'Venus', radiusKm: 6051.8, texture: 'venus', orbitAu: 0.723332, orbitalPeriodDays: 224.701, eccentricity: 0.00677672, planeTilt: 3.4, axialTilt: 177.3, rotationPeriodHours: -5832.5, phase: 1.1, atmosphere: 'venus' },
+  { name: 'Earth', radiusKm: 6371, texture: 'earth', orbitAu: 1, orbitalPeriodDays: 365.256, eccentricity: 0.01671123, planeTilt: 0, axialTilt: 23.44, rotationPeriodHours: 23.9345, phase: 2, atmosphere: 'earth' },
+  { name: 'Moon', radiusKm: 1737.4, texture: 'moon', parent: 'Earth', semiMajorAxisKm: 384400, orbitalPeriodDays: 27.3217, eccentricity: 0.0549, planeTilt: 5.145, axialTilt: 6.68, rotationPeriodHours: 655.72, phase: 0.6 },
+  { name: 'Mars', radiusKm: 3389.5, texture: 'mars', orbitAu: 1.523679, orbitalPeriodDays: 686.98, eccentricity: 0.0933941, planeTilt: 1.85, axialTilt: 25.19, rotationPeriodHours: 24.6229, phase: 2.8, atmosphere: 'mars' },
+  { name: 'Deimos', radiusKm: 6.2, parent: 'Mars', semiMajorAxisKm: 23463.2, orbitalPeriodDays: 1.26244, eccentricity: 0.00033, planeTilt: 1.79, rotationPeriodHours: 30.2986, phase: 1.8 },
+  { name: 'Phobos', radiusKm: 11.267, parent: 'Mars', semiMajorAxisKm: 9376, orbitalPeriodDays: 0.31891, eccentricity: 0.0151, planeTilt: 1.08, rotationPeriodHours: 7.65384, phase: 3.2 },
+  { name: 'Jupiter', radiusKm: 69911, texture: 'jupiter', orbitAu: 5.2044, orbitalPeriodDays: 4332.59, eccentricity: 0.04838624, planeTilt: 1.304, axialTilt: 3.13, rotationPeriodHours: 9.925, phase: 3.7 },
+  { name: 'Saturn', radiusKm: 58232, texture: 'saturn', orbitAu: 9.5826, orbitalPeriodDays: 10759.22, eccentricity: 0.05386179, planeTilt: 2.485, axialTilt: 26.73, rotationPeriodHours: 10.656, phase: 4.5, rings: true },
+  { name: 'Uranus', radiusKm: 25362, texture: 'uranus', orbitAu: 19.2184, orbitalPeriodDays: 30688.5, eccentricity: 0.04725744, planeTilt: 0.773, axialTilt: 97.77, rotationPeriodHours: -17.24, phase: 5.1 },
+  { name: 'Neptune', radiusKm: 24622, texture: 'neptune', orbitAu: 30.11, orbitalPeriodDays: 60182, eccentricity: 0.00859048, planeTilt: 1.77, axialTilt: 28.32, rotationPeriodHours: 16.11, phase: 5.8 },
 ]
 
 export const CELESTIAL_BODIES = Object.freeze(rawBodies.map((body) => {
@@ -24,9 +40,12 @@ export const CELESTIAL_BODIES = Object.freeze(rawBodies.map((body) => {
     semiMajorAxisKm,
     renderRadius: body.radiusKm * SCALE,
     orbitRadius: semiMajorAxisKm * SCALE,
-    orbitalAngularSpeed: semiMajorAxisKm > 0 ? body.orbitalSpeedKmS / semiMajorAxisKm : 0,
-    rotationAngularSpeed: body.rotationSurfaceSpeedKmS
-      ? body.rotationSurfaceSpeedKmS / body.radiusKm
+    orbitColor: ORBIT_COLORS[body.name] ?? '#ffffff',
+    orbitalAngularSpeed: body.orbitalPeriodDays
+      ? Math.PI * 2 / (body.orbitalPeriodDays * 86400)
+      : 0,
+    rotationAngularSpeed: body.rotationPeriodHours
+      ? Math.PI * 2 / (body.rotationPeriodHours * 3600)
       : 0,
   })
 }))
@@ -35,24 +54,25 @@ export const ORBITING_BODIES = Object.freeze(CELESTIAL_BODIES.filter((body) => b
 export const BODY_BY_NAME = new Map(CELESTIAL_BODIES.map((body) => [body.name, body]))
 
 export const TEXTURE_PATHS = Object.freeze({
-  stars: '/textures/8k_stars_milky_way.jpg',
-  sun: '/textures/sun/sunColor.jpg',
-  mercury: '/textures/mercury/mercuryColor.jpg',
-  venus: '/textures/venus/venusColor.jpg',
-  venusClouds: '/textures/venus/venusClouds.jpg',
-  earth: '/textures/earth/earthColor.jpg',
-  earthClouds: '/textures/earth/earthClouds2.jpg',
-  earthNormal: '/textures/earth/earthNormal2.jpg',
-  moon: '/textures/moon/moonColor.jpg',
-  mars: '/textures/mars/marsColor.jpg',
-  jupiter: '/textures/jupiter/jupiterColor.jpg',
-  saturn: '/textures/saturn/saturnColor.jpg',
-  saturnRings: '/textures/saturn/saturnRings.png',
-  uranus: '/textures/uranus/uranusColor.jpg',
-  neptune: '/textures/neptune/neptuneColor.jpg',
+  stars: `${ASSET_BASE_URL}textures/8k_stars_milky_way.jpg`,
+  sun: `${ASSET_BASE_URL}textures/sun/sunColor.jpg`,
+  mercury: `${ASSET_BASE_URL}textures/mercury/mercuryColor.jpg`,
+  venus: `${ASSET_BASE_URL}textures/venus/venusColor.jpg`,
+  venusClouds: `${ASSET_BASE_URL}textures/venus/venusClouds.jpg`,
+  earth: `${ASSET_BASE_URL}textures/earth/earthColor.jpg`,
+  earthClouds: `${ASSET_BASE_URL}textures/earth/earthClouds2.jpg`,
+  earthNormal: `${ASSET_BASE_URL}textures/earth/earthNormal2.jpg`,
+  moon: `${ASSET_BASE_URL}textures/moon/moonColor.jpg`,
+  mars: `${ASSET_BASE_URL}textures/mars/marsColor.jpg`,
+  jupiter: `${ASSET_BASE_URL}textures/jupiter/jupiterColor.jpg`,
+  saturn: `${ASSET_BASE_URL}textures/saturn/saturnColor.jpg`,
+  saturnRings: `${ASSET_BASE_URL}textures/saturn/saturnRings.png`,
+  uranus: `${ASSET_BASE_URL}textures/uranus/uranusColor.jpg`,
+  neptune: `${ASSET_BASE_URL}textures/neptune/neptuneColor.jpg`,
 })
 
 export const COLOR_TEXTURE_KEYS = Object.freeze([
   'stars', 'sun', 'mercury', 'venus', 'venusClouds', 'earth', 'moon',
   'mars', 'jupiter', 'saturn', 'saturnRings', 'uranus', 'neptune',
 ])
+
