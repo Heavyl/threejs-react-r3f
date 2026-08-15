@@ -196,7 +196,8 @@ canvas {
 
 .control-panel__collapse,
 .control-panel__sound,
-.control-panel__language {
+.control-panel__language,
+.control-panel__travel {
   display: grid;
   flex: 0 0 auto;
   width: 2.25rem;
@@ -213,8 +214,12 @@ canvas {
   transition: border-color 150ms ease, background 150ms ease;
 }
 
-.control-panel__language {
+.control-panel__language,
+.control-panel__travel {
   display: none;
+}
+
+.control-panel__language {
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -227,7 +232,8 @@ canvas {
   gap: 0.4rem;
 }
 
-.control-panel__sound svg {
+.control-panel__sound svg,
+.control-panel__travel svg {
   width: 1.15rem;
   height: 1.15rem;
   fill: none;
@@ -242,12 +248,20 @@ canvas {
   color: #8ecbff;
   background: rgb(142 203 255 / 10%);
 }
+
+.control-panel__travel.is-active {
+  border-color: rgb(142 203 255 / 38%);
+  color: #8ecbff;
+  background: rgb(142 203 255 / 10%);
+}
 .control-panel__collapse:hover,
 .control-panel__collapse:focus-visible,
 .control-panel__sound:hover,
 .control-panel__sound:focus-visible,
 .control-panel__language:hover,
-.control-panel__language:focus-visible {
+.control-panel__language:focus-visible,
+.control-panel__travel:hover,
+.control-panel__travel:focus-visible {
   border-color: rgb(142 203 255 / 65%);
   background: rgb(142 203 255 / 15%);
   outline: none;
@@ -314,6 +328,50 @@ canvas {
   margin: 0;
   accent-color: #70b8f5;
   cursor: pointer;
+}
+
+.control-row--preset output {
+  max-width: 10rem;
+  overflow: hidden;
+  color: #f7fbff;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.control-row__preset-meta {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.35rem;
+  color: #8ecbff;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.travel-speed-control {
+  pointer-events: auto;
+  text-align: left;
+}
+
+.travel-speed-panel--desktop {
+  position: fixed;
+  z-index: 20;
+  top: 1rem;
+  left: 50%;
+  width: min(22rem, calc(100vw - 12rem));
+  padding: 0.75rem 0.9rem 0.7rem;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 0.9rem;
+  color: #f7f9ff;
+  background: rgb(5 9 18 / 82%);
+  box-shadow: 0 1.25rem 4rem rgb(0 0 0 / 38%);
+  backdrop-filter: blur(18px) saturate(130%);
+  transform: translateX(-50%);
+}
+
+.travel-speed-panel--mobile {
+  display: none;
 }
 
 .control-row--toggle {
@@ -391,6 +449,26 @@ canvas {
 }
 
 @media (max-width: 600px) {
+  .travel-speed-panel--desktop {
+    display: none;
+  }
+
+  .travel-speed-panel--mobile {
+    position: fixed;
+    z-index: 19;
+    top: calc(max(0.75rem, env(safe-area-inset-top)) + 3.15rem);
+    right: 0.75rem;
+    display: block;
+    width: calc(100vw - 1.5rem);
+    padding: 0.8rem 0.9rem;
+    border: 1px solid rgb(255 255 255 / 14%);
+    border-radius: 0.9rem;
+    color: #f7f9ff;
+    background: rgb(5 9 18 / 88%);
+    box-shadow: 0 1.25rem 4rem rgb(0 0 0 / 45%);
+    backdrop-filter: blur(18px) saturate(130%);
+  }
+
   .control-panel {
     top: max(0.75rem, env(safe-area-inset-top));
     right: 0.75rem;
@@ -424,6 +502,10 @@ canvas {
     display: grid;
     flex: 1 1 auto;
     width: auto;
+  }
+
+  .control-panel__travel {
+    display: grid;
   }
 
   .control-panel__content {

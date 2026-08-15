@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { TRANSLATIONS } from '../i18n/translations'
 
 function RangeControl({ id, label, value, min, max, step, digits = 1, suffix = '', formatValue, onChange }) {
@@ -34,8 +33,7 @@ function ToggleControl({ id, label, checked, onChange }) {
   )
 }
 
-export default function ControlPanel({ language, languageAction, onLanguageToggle, settings, onSettingChange, onReset, soundEnabled, onSoundToggle }) {
-  const [collapsed, setCollapsed] = useState(true)
+export default function ControlPanel({ language, languageAction, onLanguageToggle, collapsed, onCollapsedChange, travelSpeedOpen, onTravelSpeedToggle, settings, onSettingChange, onReset, soundEnabled, onSoundToggle }) {
   const text = TRANSLATIONS[language].panel
 
   return (
@@ -54,6 +52,20 @@ export default function ControlPanel({ language, languageAction, onLanguageToggl
             onClick={onLanguageToggle}
           >
             {language === 'en' ? 'FR' : 'EN'}
+          </button>
+          <button
+            className={`control-panel__travel${travelSpeedOpen ? ' is-active' : ''}`}
+            type="button"
+            aria-expanded={travelSpeedOpen}
+            aria-label={travelSpeedOpen ? text.travelClose : text.travelOpen}
+            title={travelSpeedOpen ? text.travelClose : text.travelOpen}
+            onClick={onTravelSpeedToggle}
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M5 16c3-6 7-10 14-11-1 7-5 11-11 14l-3-3Z" />
+              <path d="m9 15-4 4m1-7-3 1 3 3m6 2 1 3 3-4" />
+              <circle cx="15" cy="9" r="1.5" />
+            </svg>
           </button>
           <button
             className={`control-panel__sound${soundEnabled ? ' is-active' : ''}`}
@@ -75,7 +87,7 @@ export default function ControlPanel({ language, languageAction, onLanguageToggl
             type="button"
             aria-expanded={!collapsed}
             aria-label={collapsed ? text.open : text.close}
-            onClick={() => setCollapsed((value) => !value)}
+            onClick={() => onCollapsedChange(!collapsed)}
           >
             {collapsed ? '☰' : '×'}
           </button>
@@ -87,7 +99,6 @@ export default function ControlPanel({ language, languageAction, onLanguageToggl
           <fieldset>
             <legend>{text.movement}</legend>
             <RangeControl id="time-scale" label={text.simulationSpeed} value={settings.timeScale} min={0} max={86400} step={1} formatValue={text.timeScaleValue} onChange={(value) => onSettingChange('timeScale', value)} />
-            <RangeControl id="travel-speed" label={text.travelAcceleration} value={settings.travelSpeedMultiplier} min={1} max={10000} step={1} formatValue={(value) => `×${value.toFixed(0)}`} onChange={(value) => onSettingChange('travelSpeedMultiplier', value)} />
           </fieldset>
 
           <fieldset>

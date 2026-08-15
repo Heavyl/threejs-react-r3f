@@ -21,6 +21,8 @@ export default function SolarSystem({
   const bodyRefs = useRef(Object.create(null))
   const controlsRef = useRef()
   const simulationTimeRef = useRef(0)
+  const shipRef = useRef()
+  const travelPositionRef = useRef()
 
   useFrame((_, delta) => {
     simulationTimeRef.current += delta * settings.timeScale
@@ -42,7 +44,7 @@ export default function SolarSystem({
             isSelected={body.name === selectedBody}
             isFocused={body.name === focusedBody}
             isParentFocused={!body.parent || body.parent === focusedBody}
-            interactionDisabled={travelling}
+            interactionDisabled={false}
             language={language}
             onSelect={onSelect}
           />
@@ -55,7 +57,7 @@ export default function SolarSystem({
 
       <OrbitControls
         ref={controlsRef}
-        enabled={!travelling}
+        enabled
         enableDamping
         dampingFactor={0.06}
         enablePan={false}
@@ -68,11 +70,15 @@ export default function SolarSystem({
         bodyRefs={bodyRefs}
         controlsRef={controlsRef}
         settings={settings}
+        shipRef={shipRef}
+        travelPositionRef={travelPositionRef}
         onTravellingChange={onTravellingChange}
         onTravelPreviewChange={onTravelPreviewChange}
       />
       <TravelShip
         bodyRefs={bodyRefs}
+        shipRef={shipRef}
+        travelPositionRef={travelPositionRef}
         focusedBody={focusedBody}
         simulationTimeRef={simulationTimeRef}
         settings={settings}
