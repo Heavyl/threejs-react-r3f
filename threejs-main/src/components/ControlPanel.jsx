@@ -34,7 +34,7 @@ function ToggleControl({ id, label, checked, onChange }) {
   )
 }
 
-export default function ControlPanel({ language, settings, onSettingChange, onReset, soundEnabled, onSoundToggle }) {
+export default function ControlPanel({ language, languageAction, onLanguageToggle, settings, onSettingChange, onReset, soundEnabled, onSoundToggle }) {
   const [collapsed, setCollapsed] = useState(true)
   const text = TRANSLATIONS[language].panel
 
@@ -46,6 +46,15 @@ export default function ControlPanel({ language, settings, onSettingChange, onRe
           <h2>{text.title}</h2>
         </div>
         <div className="control-panel__actions">
+          <button
+            className="control-panel__language"
+            type="button"
+            aria-label={languageAction}
+            title={languageAction}
+            onClick={onLanguageToggle}
+          >
+            {language === 'en' ? 'FR' : 'EN'}
+          </button>
           <button
             className={`control-panel__sound${soundEnabled ? ' is-active' : ''}`}
             type="button"

@@ -70,6 +70,9 @@ export default function App() {
   const [sceneRendered, setSceneRendered] = useState(false)
   const [minimumLoadingElapsed, setMinimumLoadingElapsed] = useState(false)
   const [settings, setSettings] = useState({ ...DEFAULT_SYSTEM_SETTINGS })
+  const [hudCollapsed, setHudCollapsed] = useState(false)
+  const appShellRef = useRef(null)
+  const hudRef = useRef(null)
   const { progress } = useProgress()
   const ensureAudio = useSolarAudio({ enabled: soundEnabled, travelling })
 
@@ -80,6 +83,25 @@ export default function App() {
   useEffect(() => {
     const timer = window.setTimeout(() => setMinimumLoadingElapsed(true), MIN_LOADING_DURATION_MS)
     return () => window.clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    const shell = appShellRef.current
+    const hud = hudRef.current
+    if (!shell || !hud) return undefined
+
+    const updateHudHeight = () => {
+      shell.style.setProperty('--mobile-hud-height', `${hud.getBoundingClientRect().height}px`)
+    }
+    const observer = new ResizeObserver(updateHudHeight)
+    observer.observe(hud)
+    window.addEventListener('resize', updateHudHeight)
+    updateHudHeight()
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', updateHudHeight)
+    }
   }, [])
 
   const sceneReady = sceneRendered && minimumLoadingElapsed
@@ -112,7 +134,7 @@ export default function App() {
   const focusedLabel = getBodyLabel(focusedBody, language)
 
   return (
-    <main className="app-shell">
+    <main ref={appShellRef} className="app-shell">
       <Canvas
         camera={{ fov: 55, near: 0.0001, far: 5000000 }}
         dpr={[1, 2]}
@@ -137,7 +159,7 @@ export default function App() {
       <LoadingScreen ready={sceneReady} progress={progress} text={text} />
 
       <button
-        className="language-switch"
+        className="language-switch language-switch--desktop"
         type="button"
         aria-label={text.languageAction}
         title={text.languageAction}
@@ -148,6 +170,8 @@ export default function App() {
 
       <ControlPanel
         language={language}
+        languageAction={text.languageAction}
+        onLanguageToggle={() => setLanguage((current) => (current === 'en' ? 'fr' : 'en'))}
         settings={settings}
         onSettingChange={updateSetting}
         onReset={resetSettings}
@@ -155,23 +179,43 @@ export default function App() {
         onSoundToggle={toggleSound}
       />
 
-      <section className="hud" aria-live="polite">
-        {travelling && <p className="travelling">{text.travellingTo(focusedLabel)}</p>}
-        <h1>{focusedLabel}</h1>
-        {!travelling && (
-          <p className={hasPendingTarget ? 'target-hint is-active' : 'target-hint'}>
-            {hasPendingTarget
-              ? travelPreview
-                ? text.targetHint(
-                    selectedLabel,
-                    formatPreviewDistance(travelPreview.distanceKm, language),
-                    formatDuration(travelPreview.durationSeconds, language),
-                  )
-                : text.targetCalculating(selectedLabel)
-              : text.selectionHint}
-          </p>
-        )}
-        <DistanceCounter language={language} />
+      <section
+        ref={hudRef}
+        className={`hud${hudCollapsed ? ' is-collapsed' : ''}`}
+        aria-live="polite"
+      >
+        <div className="hud__header">
+          <div className="hud__identity">
+            {travelling && <p className="travelling">{text.travellingTo(focusedLabel)}</p>}
+            <h1>{focusedLabel}</h1>
+          </div>
+          <button
+            className="hud__collapse"
+            type="button"
+            aria-expanded={!hudCollapsed}
+            aria-label={hudCollapsed ? text.travelPanelOpen : text.travelPanelClose}
+            title={hudCollapsed ? text.travelPanelOpen : text.travelPanelClose}
+            onClick={() => setHudCollapsed((value) => !value)}
+          >
+            <span aria-hidden="true">{hudCollapsed ? '+' : '-'}</span>
+          </button>
+        </div>
+        <div className="hud__details">
+          {!travelling && (
+            <p className={hasPendingTarget ? 'target-hint is-active' : 'target-hint'}>
+              {hasPendingTarget
+                ? travelPreview
+                  ? text.targetHint(
+                      selectedLabel,
+                      formatPreviewDistance(travelPreview.distanceKm, language),
+                      formatDuration(travelPreview.durationSeconds, language),
+                    )
+                  : text.targetCalculating(selectedLabel)
+                : text.selectionHint}
+            </p>
+          )}
+          <DistanceCounter language={language} />
+        </div>
       </section>
     </main>
   )

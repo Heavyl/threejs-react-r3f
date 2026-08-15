@@ -39,6 +39,8 @@ export const TRANSLATIONS = Object.freeze({
     targetHint: (name, distance, duration) => `Target: ${name} — ${distance} · estimated travel time: ${duration}`,
     targetCalculating: (name) => `Target: ${name} — calculating route…`,
     selectionHint: 'Click once to target a planet, then again to travel.',
+    travelPanelOpen: 'Expand travel information',
+    travelPanelClose: 'Collapse travel information',
     panel: {
       ariaLabel: 'Solar system settings',
       eyebrow: 'Simulation',
@@ -84,6 +86,8 @@ export const TRANSLATIONS = Object.freeze({
     targetHint: (name, distance, duration) => `Cible : ${name} — ${distance} · trajet estimé : ${duration}`,
     targetCalculating: (name) => `Cible : ${name} — calcul du trajet…`,
     selectionHint: 'Cliquez une fois pour cibler une planète, puis une seconde fois pour voyager.',
+    travelPanelOpen: 'Développer les informations de voyage',
+    travelPanelClose: 'Réduire les informations de voyage',
     panel: {
       ariaLabel: 'Réglages du système solaire',
       eyebrow: 'Simulation',
