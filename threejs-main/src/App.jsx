@@ -208,7 +208,7 @@ export default function App() {
     <main ref={appShellRef} className="app-shell">
       <Canvas
         camera={{ fov: 55, near: 0.0001, far: 5000000 }}
-        dpr={mobilePerformance ? 1 : [1, 1.5]}
+        dpr={mobilePerformance ? 1 : [1.5, 1.5]}
         gl={{ antialias: !mobilePerformance, powerPreference: 'high-performance', logarithmicDepthBuffer: true }}
       >
         <Suspense fallback={null}>
