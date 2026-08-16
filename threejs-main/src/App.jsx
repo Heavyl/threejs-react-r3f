@@ -15,7 +15,24 @@ import SolarSystem from './SolarSystem'
 import { formatDuration } from './utils/formatDuration'
 
 const MIN_LOADING_DURATION_MS = 3000
+const MOBILE_PERFORMANCE_QUERY = '(max-width: 768px), (pointer: coarse)'
 
+function useMobilePerformanceProfile() {
+  const [isMobile, setIsMobile] = useState(
+    () => window.matchMedia(MOBILE_PERFORMANCE_QUERY).matches,
+  )
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(MOBILE_PERFORMANCE_QUERY)
+    const updateProfile = () => setIsMobile(mediaQuery.matches)
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', updateProfile)
+      return () => mediaQuery.removeEventListener('change', updateProfile)
+    }
+    mediaQuery.addListener(updateProfile)
+    return () => mediaQuery.removeListener(updateProfile)
+  }, [])
+  return isMobile
+}
 function SceneReady({ onReady }) {
   const renderedFrames = useRef(0)
 
@@ -113,6 +130,7 @@ function TravelSpeedControl({ id, label, language, value, onChange }) {
 
 
 export default function App() {
+  const mobilePerformance = useMobilePerformanceProfile()
   const [language, setLanguage] = useState('en')
   const [selectedBody, setSelectedBody] = useState('Earth')
   const [focusedBody, setFocusedBody] = useState('Earth')
@@ -190,8 +208,8 @@ export default function App() {
     <main ref={appShellRef} className="app-shell">
       <Canvas
         camera={{ fov: 55, near: 0.0001, far: 5000000 }}
-        dpr={[1, 2]}
-        gl={{ antialias: true, powerPreference: 'high-performance', logarithmicDepthBuffer: true }}
+        dpr={mobilePerformance ? 1 : [1, 1.5]}
+        gl={{ antialias: !mobilePerformance, powerPreference: 'high-performance', logarithmicDepthBuffer: true }}
       >
         <Suspense fallback={null}>
           <SolarSystem
@@ -200,12 +218,13 @@ export default function App() {
             language={language}
             travelling={travelling}
             settings={settings}
+            mobilePerformance={mobilePerformance}
             onSelect={selectBody}
             onTravellingChange={setTravelling}
             onTravelPreviewChange={setTravelPreview}
           />
           <SceneReady onReady={() => setSceneRendered(true)} />
-          <TravelDistortion />
+          <TravelDistortion mobilePerformance={mobilePerformance} />
         </Suspense>
       </Canvas>
 

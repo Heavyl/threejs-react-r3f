@@ -5,7 +5,7 @@ import CameraRig from './components/CameraRig'
 import { CelestialBody, OrbitPath } from './components/CelestialBody'
 import SceneEnvironment from './components/SceneEnvironment'
 import TravelShip from './components/TravelShip'
-import { CELESTIAL_BODIES, ORBITING_BODIES, TEXTURE_PATHS } from './data/celestialBodies'
+import { CELESTIAL_BODIES, MOBILE_TEXTURE_PATHS, ORBITING_BODIES, TEXTURE_PATHS } from './data/celestialBodies'
 
 export default function SolarSystem({
   selectedBody,
@@ -13,11 +13,12 @@ export default function SolarSystem({
   language,
   travelling,
   settings,
+  mobilePerformance,
   onSelect,
   onTravellingChange,
   onTravelPreviewChange,
 }) {
-  const textures = useTexture(TEXTURE_PATHS)
+  const textures = useTexture(mobilePerformance ? MOBILE_TEXTURE_PATHS : TEXTURE_PATHS)
   const bodyRefs = useRef(Object.create(null))
   const controlsRef = useRef()
   const simulationTimeRef = useRef(0)
@@ -41,6 +42,7 @@ export default function SolarSystem({
             bodyRefs={bodyRefs}
             simulationTimeRef={simulationTimeRef}
             settings={settings}
+            mobilePerformance={mobilePerformance}
             isSelected={body.name === selectedBody}
             isFocused={body.name === focusedBody}
             isParentFocused={!body.parent || body.parent === focusedBody}
@@ -51,7 +53,7 @@ export default function SolarSystem({
         ))}
 
         {ORBITING_BODIES.map((body) => (
-          <OrbitPath key={`${body.name}-orbit`} body={body} bodyRefs={bodyRefs} settings={settings} />
+          <OrbitPath key={`${body.name}-orbit`} body={body} bodyRefs={bodyRefs} settings={settings} mobilePerformance={mobilePerformance} />
         ))}
       </group>
 

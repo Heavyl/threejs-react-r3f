@@ -7,16 +7,16 @@ import { getBodyLabel } from '../i18n/translations'
 import { createOrbitGeometry, setOrbitalPosition } from '../utils/orbit'
 
 
-function Atmosphere({ type, textures, radius }) {
+function Atmosphere({ type, textures, radius, segments }) {
   if (type === 'earth') {
     return (
       <>
         <mesh scale={1.035}>
-          <sphereGeometry args={[radius, 40, 40]} />
+          <sphereGeometry args={[radius, segments, segments]} />
           <meshBasicMaterial color="#3d7dff" transparent opacity={0.18} side={THREE.BackSide} depthWrite={false} />
         </mesh>
         <mesh scale={1.014}>
-          <sphereGeometry args={[radius, 40, 40]} />
+          <sphereGeometry args={[radius, segments, segments]} />
           <meshStandardMaterial alphaMap={textures.earthClouds} transparent opacity={0.28} depthWrite={false} />
         </mesh>
       </>
@@ -26,7 +26,7 @@ function Atmosphere({ type, textures, radius }) {
   if (type === 'venus') {
     return (
       <mesh scale={1.03}>
-        <sphereGeometry args={[radius, 40, 40]} />
+        <sphereGeometry args={[radius, segments, segments]} />
         <meshStandardMaterial map={textures.venusClouds} transparent opacity={0.22} depthWrite={false} />
       </mesh>
     )
@@ -34,25 +34,26 @@ function Atmosphere({ type, textures, radius }) {
 
   return (
     <mesh scale={1.025}>
-      <sphereGeometry args={[radius, 40, 40]} />
+      <sphereGeometry args={[radius, segments, segments]} />
       <meshBasicMaterial color="#dd6c30" transparent opacity={0.17} side={THREE.BackSide} depthWrite={false} />
     </mesh>
   )
 }
 
-function SaturnRings({ texture, radius }) {
+function SaturnRings({ texture, radius, segments }) {
   return (
     <mesh rotation={[Math.PI / 2, 0, 0]}>
-      <ringGeometry args={[radius * 1.15, radius * 2.41, 160]} />
+      <ringGeometry args={[radius * 1.15, radius * 2.41, segments]} />
       <meshStandardMaterial map={texture} side={THREE.DoubleSide} transparent opacity={0.9} roughness={0.65} />
     </mesh>
   )
 }
 
-export function OrbitPath({ body, bodyRefs, settings }) {
+export function OrbitPath({ body, bodyRefs, settings, mobilePerformance }) {
   const orbitRef = useRef()
   const materialRef = useRef()
-  const geometry = useMemo(() => createOrbitGeometry(body), [body])
+  const orbitSegments = mobilePerformance ? 512 : 2048
+  const geometry = useMemo(() => createOrbitGeometry(body, orbitSegments), [body, orbitSegments])
 
   useFrame((_, delta) => {
     const parent = body.parent ? bodyRefs.current[body.parent] : null
@@ -88,6 +89,7 @@ export function CelestialBody({
   bodyRefs,
   simulationTimeRef,
   settings,
+  mobilePerformance,
   isSelected,
   isFocused,
   isParentFocused,
@@ -121,7 +123,9 @@ export function CelestialBody({
     if (!interactionDisabled) onSelect(body.name)
   }
 
-  const segments = body.emissive ? 64 : 48
+  const surfaceSegments = mobilePerformance ? (body.emissive ? 32 : 24) : (body.emissive ? 64 : 48)
+  const atmosphereSegments = mobilePerformance ? 24 : 40
+  const ringSegments = mobilePerformance ? 96 : 160
   const labelHeight = body.renderRadius + Math.max(0.45, body.renderRadius * 0.13)
 
   return (
@@ -131,7 +135,7 @@ export function CelestialBody({
         rotation={[0, 0, THREE.MathUtils.degToRad(body.axialTilt || 0)]}
       >
         <mesh onPointerDown={selectBody}>
-          <sphereGeometry args={[body.renderRadius, segments, segments]} />
+          <sphereGeometry args={[body.renderRadius, surfaceSegments, surfaceSegments]} />
           {body.emissive ? (
             <meshBasicMaterial map={textures[body.texture]} />
           ) : (
@@ -145,10 +149,10 @@ export function CelestialBody({
           )}
         </mesh>
         {settings.showAtmospheres && body.atmosphere && (
-          <Atmosphere type={body.atmosphere} textures={textures} radius={body.renderRadius} />
+          <Atmosphere type={body.atmosphere} textures={textures} radius={body.renderRadius} segments={atmosphereSegments} />
         )}
         {settings.showRings && body.rings && (
-          <SaturnRings texture={textures.saturnRings} radius={body.renderRadius} />
+          <SaturnRings texture={textures.saturnRings} radius={body.renderRadius} segments={ringSegments} />
         )}
       </group>
 

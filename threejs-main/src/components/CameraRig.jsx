@@ -18,11 +18,27 @@ const DECELERATION_DURATION = 2
 const TOTAL_ACCELERATION_DURATION = TARGETING_DURATION + ACCELERATION_DURATION
 const METRICS_UPDATE_INTERVAL = 0.1
 const PREVIEW_UPDATE_INTERVAL = 0.25
-const MIN_TRAVEL_FOCAL_LENGTH = 8
-const TRAVEL_FOCAL_RATIO = 0.28
+const MIN_TRAVEL_FOCAL_LENGTH = 3
+const TRAVEL_FOCAL_RATIO = 0
+const MAX_SHAKE_PITCH = THREE.MathUtils.degToRad(0.01)
+const MAX_SHAKE_YAW = THREE.MathUtils.degToRad(0.01)
+const MAX_SHAKE_ROLL = THREE.MathUtils.degToRad(0)
+const MAX_SHAKE_STRENGTH = 0.5
 
 function worldUnitsToKilometers(distance, globalScale) {
   return distance / globalScale / SCALE
+}
+function applyTravelShake(camera, elapsed, intensity) {
+  const strength = Math.min(
+    THREE.MathUtils.clamp(intensity, 0, 1) ** 1.5,
+    MAX_SHAKE_STRENGTH,
+  )
+  const pitch = (Math.sin(elapsed * 17.1) + Math.sin(elapsed * 31.7) * 0.35) * MAX_SHAKE_PITCH * strength
+  const yaw = (Math.sin(elapsed * 13.7 + 1.4) + Math.sin(elapsed * 27.3) * 0.3) * MAX_SHAKE_YAW * strength
+  const roll = (Math.sin(elapsed * 11.3 + 2.1) + Math.sin(elapsed * 23.9) * 0.25) * MAX_SHAKE_ROLL * strength
+  camera.rotateX(pitch)
+  camera.rotateY(yaw)
+  camera.rotateZ(roll)
 }
 
 
@@ -108,6 +124,7 @@ export default function CameraRig({ selectedBody, focusedBody, bodyRefs, control
   const metricsElapsed = useRef(0)
   const previewElapsed = useRef(Infinity)
   const previewBody = useRef(null)
+  const shakeElapsed = useRef(0)
   const lastTarget = useMemo(() => new THREE.Vector3(), [])
   const targetPosition = useMemo(() => new THREE.Vector3(), [])
   const shipPosition = useMemo(() => new THREE.Vector3(), [])
@@ -265,6 +282,10 @@ export default function CameraRig({ selectedBody, focusedBody, bodyRefs, control
       const hasArrived = motion.hasArrived
       if (hasArrived) travelPositionRef.current.copy(destination)
       controls.update()
+      if (!hasArrived && settings.timeScale > 0) {
+        shakeElapsed.current += delta
+        applyTravelShake(camera, shakeElapsed.current, visualIntensity)
+      }
 
       metricsElapsed.current += delta
       if (metricsElapsed.current >= METRICS_UPDATE_INTERVAL || hasArrived) {
