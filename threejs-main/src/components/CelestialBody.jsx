@@ -98,7 +98,7 @@ export function CelestialBody({
   onSelect,
 }) {
   const bodyRef = useRef()
-  const surfaceRef = useRef()
+  const spinRef = useRef()
   const orbitalPosition = useMemo(() => new THREE.Vector3(), [])
 
   useLayoutEffect(() => {
@@ -114,7 +114,7 @@ export function CelestialBody({
     bodyRef.current.position.copy(orbitalPosition)
 
     if (body.rotationAngularSpeed) {
-      surfaceRef.current.rotation.y = simulationTimeRef.current * body.rotationAngularSpeed
+      spinRef.current.rotation.y = simulationTimeRef.current * body.rotationAngularSpeed
     }
   })
 
@@ -123,7 +123,7 @@ export function CelestialBody({
     if (!interactionDisabled) onSelect(body.name)
   }
 
-  const surfaceSegments = mobilePerformance ? (body.emissive ? 32 : 24) : (body.emissive ? 64 : 48)
+  const surfaceSegments = mobilePerformance ? (body.emissive ? 64 : 48) : (body.emissive ? 64 : 48)
   const atmosphereSegments = mobilePerformance ? 24 : 40
   const ringSegments = mobilePerformance ? 96 : 160
   const labelHeight = body.renderRadius + Math.max(0.45, body.renderRadius * 0.13)
@@ -131,29 +131,30 @@ export function CelestialBody({
   return (
     <group ref={bodyRef}>
       <group
-        ref={surfaceRef}
         rotation={[0, 0, THREE.MathUtils.degToRad(body.axialTilt || 0)]}
       >
-        <mesh onPointerDown={selectBody}>
-          <sphereGeometry args={[body.renderRadius, surfaceSegments, surfaceSegments]} />
-          {body.emissive ? (
-            <meshBasicMaterial map={textures[body.texture]} />
-          ) : (
-            <meshStandardMaterial
-              map={textures[body.texture]}
-              normalMap={body.name === 'Earth' ? textures.earthNormal : undefined}
-              color={body.texture ? '#ffffff' : '#b8b8b8'}
-              roughness={0.82}
-              metalness={0}
-            />
+        <group ref={spinRef}>
+          <mesh onPointerDown={selectBody}>
+            <sphereGeometry args={[body.renderRadius, surfaceSegments, surfaceSegments]} />
+            {body.emissive ? (
+              <meshBasicMaterial map={textures[body.texture]} />
+            ) : (
+              <meshStandardMaterial
+                map={textures[body.texture]}
+                normalMap={body.name === 'Earth' ? textures.earthNormal : undefined}
+                color={body.texture ? '#ffffff' : '#b8b8b8'}
+                roughness={0.82}
+                metalness={0}
+              />
+            )}
+          </mesh>
+          {settings.showAtmospheres && body.atmosphere && (
+            <Atmosphere type={body.atmosphere} textures={textures} radius={body.renderRadius} segments={atmosphereSegments} />
           )}
-        </mesh>
-        {settings.showAtmospheres && body.atmosphere && (
-          <Atmosphere type={body.atmosphere} textures={textures} radius={body.renderRadius} segments={atmosphereSegments} />
-        )}
-        {settings.showRings && body.rings && (
-          <SaturnRings texture={textures.saturnRings} radius={body.renderRadius} segments={ringSegments} />
-        )}
+          {settings.showRings && body.rings && (
+            <SaturnRings texture={textures.saturnRings} radius={body.renderRadius} segments={ringSegments} />
+          )}
+        </group>
       </group>
 
       {settings.showLabels && isParentFocused && (

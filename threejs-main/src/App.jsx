@@ -16,6 +16,8 @@ import { formatDuration } from './utils/formatDuration'
 
 const MIN_LOADING_DURATION_MS = 3000
 const MOBILE_PERFORMANCE_QUERY = '(max-width: 768px), (pointer: coarse)'
+const INSTANT_TRAVEL_FADE_OUT_MS = 350
+const INSTANT_TRAVEL_REVEAL_DELAY_MS = 100
 
 function useMobilePerformanceProfile() {
   const [isMobile, setIsMobile] = useState(
@@ -135,6 +137,8 @@ export default function App() {
   const [selectedBody, setSelectedBody] = useState('Earth')
   const [focusedBody, setFocusedBody] = useState('Earth')
   const [travelling, setTravelling] = useState(false)
+  const [instantTravelRequest, setInstantTravelRequest] = useState(null)
+  const [instantTravelFadeActive, setInstantTravelFadeActive] = useState(false)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [travelPreview, setTravelPreview] = useState(null)
   const [sceneRendered, setSceneRendered] = useState(false)
@@ -143,6 +147,9 @@ export default function App() {
   const [hudCollapsed, setHudCollapsed] = useState(false)
   const [settingsCollapsed, setSettingsCollapsed] = useState(true)
   const [mobileTravelSpeedOpen, setMobileTravelSpeedOpen] = useState(false)
+  const instantTravelSequence = useRef(0)
+  const instantTravelTimerRef = useRef()
+  const instantTravelRevealTimerRef = useRef()
   const appShellRef = useRef(null)
   const hudRef = useRef(null)
   const { progress } = useProgress()
@@ -157,9 +164,15 @@ export default function App() {
     return () => window.clearTimeout(timer)
   }, [])
 
+  useEffect(() => () => {
+    window.clearTimeout(instantTravelTimerRef.current)
+    window.clearTimeout(instantTravelRevealTimerRef.current)
+  }, [])
+
   useEffect(() => {
     const shell = appShellRef.current
     const hud = hudRef.current
+
     if (!shell || !hud) return undefined
 
     const updateHudHeight = () => {
@@ -204,6 +217,32 @@ export default function App() {
   const selectedLabel = getBodyLabel(selectedBody, language)
   const focusedLabel = getBodyLabel(focusedBody, language)
 
+  const canInstantTravel = travelling
+  const instantTravelTargetId = hasPendingTarget ? selectedBody : focusedBody
+  const instantTravelTargetLabel = getBodyLabel(instantTravelTargetId, language)
+  const startInstantTravel = () => {
+    if (!canInstantTravel || instantTravelFadeActive) return
+
+    const targetId = instantTravelTargetId
+    window.clearTimeout(instantTravelTimerRef.current)
+    window.clearTimeout(instantTravelRevealTimerRef.current)
+    setInstantTravelFadeActive(true)
+
+    instantTravelTimerRef.current = window.setTimeout(() => {
+      instantTravelSequence.current += 1
+      setInstantTravelRequest({
+        id: instantTravelSequence.current,
+        targetId,
+      })
+      setFocusedBody(targetId)
+
+      instantTravelRevealTimerRef.current = window.setTimeout(
+        () => setInstantTravelFadeActive(false),
+        INSTANT_TRAVEL_REVEAL_DELAY_MS,
+      )
+    }, INSTANT_TRAVEL_FADE_OUT_MS)
+  }
+
   return (
     <main ref={appShellRef} className="app-shell">
       <Canvas
@@ -221,6 +260,7 @@ export default function App() {
             mobilePerformance={mobilePerformance}
             onSelect={selectBody}
             onTravellingChange={setTravelling}
+            instantTravelRequest={instantTravelRequest}
             onTravelPreviewChange={setTravelPreview}
           />
           <SceneReady onReady={() => setSceneRendered(true)} />
@@ -274,14 +314,21 @@ export default function App() {
       {mobileTravelSpeedOpen && (
         <aside className="travel-speed-panel travel-speed-panel--mobile" aria-label={text.panel.travelSpeed}>
           <TravelSpeedControl
+
             id="travel-speed-mobile"
             label={text.panel.travelSpeed}
             language={language}
             value={settings.travelSpeedKmS}
             onChange={(value) => updateSetting('travelSpeedKmS', value)}
           />
+
         </aside>
       )}
+
+      <div
+        className={'instant-travel-fade' + (instantTravelFadeActive ? ' is-active' : '')}
+        aria-hidden="true"
+      />
 
       <section
         ref={hudRef}
@@ -305,19 +352,33 @@ export default function App() {
           </button>
         </div>
         <div className="hud__details">
-          {(!travelling || hasPendingTarget) && (
-            <p className={hasPendingTarget ? 'target-hint is-active' : 'target-hint'}>
-              {hasPendingTarget
-                ? travelPreview
-                  ? text.targetHint(
-                      selectedLabel,
-                      formatPreviewDistance(travelPreview.distanceKm, language),
-                      formatDuration(travelPreview.durationSeconds, language),
-                    )
-                  : text.targetCalculating(selectedLabel)
-                : text.selectionHint}
-            </p>
-          )}
+          <div className="target-actions">
+            {(!travelling || hasPendingTarget) && (
+              <p className={hasPendingTarget ? 'target-hint is-active' : 'target-hint'}>
+                {hasPendingTarget
+                  ? travelPreview
+                    ? text.targetHint(
+                        selectedLabel,
+                        formatPreviewDistance(travelPreview.distanceKm, language),
+                        formatDuration(travelPreview.durationSeconds, language),
+                      )
+                    : text.targetCalculating(selectedLabel)
+                  : text.selectionHint}
+              </p>
+            )}
+            {canInstantTravel && (
+              <button
+                className="instant-travel-button"
+                type="button"
+                disabled={instantTravelFadeActive}
+                aria-label={text.instantTravellingTo(instantTravelTargetLabel)}
+                onClick={startInstantTravel}
+              >
+                <span aria-hidden="true">✦</span>
+                {text.instantTravel}
+              </button>
+            )}
+          </div>
           <DistanceCounter language={language} />
         </div>
       </section>

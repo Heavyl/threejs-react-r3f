@@ -12,6 +12,7 @@ export default function SolarSystem({
   focusedBody,
   language,
   travelling,
+  instantTravelRequest,
   settings,
   mobilePerformance,
   onSelect,
@@ -70,6 +71,7 @@ export default function SolarSystem({
         selectedBody={selectedBody}
         focusedBody={focusedBody}
         bodyRefs={bodyRefs}
+        instantTravelRequest={instantTravelRequest}
         controlsRef={controlsRef}
         settings={settings}
         shipRef={shipRef}

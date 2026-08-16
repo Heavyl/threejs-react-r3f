@@ -118,6 +118,57 @@ canvas {
   opacity: 0.62;
 }
 
+.target-actions {
+  display: grid;
+  justify-items: center;
+  gap: 0.65rem;
+}
+
+.instant-travel-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.1rem;
+  padding: 0.42rem 0.85rem;
+  border: 1px solid rgb(142 203 255 / 42%);
+  border-radius: 999px;
+  color: #dff2ff;
+  background:
+    linear-gradient(135deg, rgb(78 166 235 / 18%), rgb(116 92 224 / 16%)),
+    rgb(5 12 24 / 86%);
+  box-shadow: inset 0 0 1rem rgb(142 203 255 / 5%);
+  cursor: pointer;
+  pointer-events: auto;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.025em;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.instant-travel-button span {
+  color: #8ecbff;
+  font-size: 0.82rem;
+}
+
+.instant-travel-button:hover,
+.instant-travel-button:focus-visible {
+  border-color: rgb(142 203 255 / 85%);
+  background: linear-gradient(135deg, rgb(78 166 235 / 28%), rgb(116 92 224 / 24%));
+  box-shadow: 0 0 1.2rem rgb(92 178 255 / 18%);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.instant-travel-button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 .target-hint.is-active {
   color: #8ecbff;
   font-weight: 500;
@@ -735,9 +786,73 @@ canvas {
   outline: none;
 }
 
+.instant-travel-fade {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  contain: strict;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+  transition: visibility 0s linear 350ms;
+}
+
+.instant-travel-fade::before,
+.instant-travel-fade::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150vmax;
+  height: 150vmax;
+  border-radius: 50%;
+  content: '';
+  transform: translate(-50%, -50%);
+  transition:
+    width 350ms cubic-bezier(0.65, 0, 0.35, 1),
+    height 350ms cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: width, height;
+}
+
+.instant-travel-fade::before {
+  box-shadow: 0 0 0 200vmax #000;
+}
+
+.instant-travel-fade::after {
+  border: 1px solid rgb(142 203 255 / 72%);
+  box-shadow:
+    0 0 1.8rem rgb(81 171 255 / 60%),
+    inset 0 0 1.8rem rgb(94 91 255 / 38%);
+}
+
+.instant-travel-fade.is-active {
+  pointer-events: auto;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.instant-travel-fade.is-active::before,
+.instant-travel-fade.is-active::after {
+  width: 0;
+  height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .instant-travel-fade {
+    transition-delay: 100ms;
+  }
+
+  .instant-travel-fade::before,
+  .instant-travel-fade::after {
+    transition-duration: 100ms;
+  }
+}
+
+
+
 @media (max-width: 600px) {
   .language-switch--desktop {
     display: none;
+
   }
 }
 

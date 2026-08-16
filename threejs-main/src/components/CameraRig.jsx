@@ -18,11 +18,11 @@ const DECELERATION_DURATION = 2
 const TOTAL_ACCELERATION_DURATION = TARGETING_DURATION + ACCELERATION_DURATION
 const METRICS_UPDATE_INTERVAL = 0.1
 const PREVIEW_UPDATE_INTERVAL = 0.25
-const MIN_TRAVEL_FOCAL_LENGTH = 3
+const MIN_TRAVEL_FOCAL_LENGTH = 5
 const TRAVEL_FOCAL_RATIO = 0
-const MAX_SHAKE_PITCH = THREE.MathUtils.degToRad(0.01)
-const MAX_SHAKE_YAW = THREE.MathUtils.degToRad(0.01)
-const MAX_SHAKE_ROLL = THREE.MathUtils.degToRad(0)
+const MAX_SHAKE_PITCH = THREE.MathUtils.degToRad(1.01)
+const MAX_SHAKE_YAW = THREE.MathUtils.degToRad(1.01)
+const MAX_SHAKE_ROLL = THREE.MathUtils.degToRad(1)
 const MAX_SHAKE_STRENGTH = 0.5
 
 function worldUnitsToKilometers(distance, globalScale) {
@@ -117,7 +117,18 @@ function advanceTravelMotion(transition, delta, settings) {
   }
 }
 
-export default function CameraRig({ selectedBody, focusedBody, bodyRefs, controlsRef, shipRef, travelPositionRef, settings, onTravellingChange, onTravelPreviewChange }) {
+export default function CameraRig({
+  selectedBody,
+  focusedBody,
+  instantTravelRequest,
+  bodyRefs,
+  controlsRef,
+  shipRef,
+  travelPositionRef,
+  settings,
+  onTravellingChange,
+  onTravelPreviewChange,
+}) {
   const { camera } = useThree()
   const initialized = useRef(false)
   const previousFocus = useRef(focusedBody)
@@ -133,10 +144,10 @@ export default function CameraRig({ selectedBody, focusedBody, bodyRefs, control
   const targetDisplacement = useMemo(() => new THREE.Vector3(), [])
   const previewTargetPosition = useMemo(() => new THREE.Vector3(), [])
   const previewDestination = useMemo(() => new THREE.Vector3(), [])
-  const previewViewOffset = useMemo(() => new THREE.Vector3(), [])
   const frameDelta = useMemo(() => new THREE.Vector3(), [])
   const viewOffset = useMemo(() => new THREE.Vector3(1, 0.55, 1).normalize(), [])
   const transition = useRef(null)
+  const handledInstantTravelRequest = useRef(0)
   const travelling = useRef(false)
 
   const setTravelling = (value) => {
@@ -200,6 +211,51 @@ export default function CameraRig({ selectedBody, focusedBody, bodyRefs, control
       previewElapsed.current = Infinity
       onTravelPreviewChange(null)
     }
+    const isInstantTravel = (
+      instantTravelRequest?.targetId === focusedBody
+      && instantTravelRequest.id !== handledInstantTravelRequest.current
+    )
+
+    if (isInstantTravel) {
+      const departureId = transition.current?.departureId ?? previousFocus.current
+      const previousTransition = transition.current
+      handledInstantTravelRequest.current = instantTravelRequest.id
+      previousFocus.current = focusedBody
+      transition.current = null
+      shakeElapsed.current = 0
+
+      viewOffset.copy(camera.position).sub(controls.target)
+      if (viewOffset.lengthSq() < 0.000001) viewOffset.set(1, 0.55, 1)
+      viewOffset.normalize()
+
+      camera.setFocalLength(
+        previousTransition?.baseFocalLength ?? camera.getFocalLength(),
+      )
+      camera.position.copy(targetPosition).addScaledVector(viewOffset, cameraDistance)
+      controls.target.copy(targetPosition)
+      controls.enabled = true
+      controls.enableDamping = true
+      controls.update()
+      lastTarget.copy(targetPosition)
+      if (!travelPositionRef.current) travelPositionRef.current = new THREE.Vector3()
+      travelPositionRef.current.copy(targetPosition)
+
+      publishTravelMetrics({
+        hasJourney: false,
+        active: false,
+        departureId,
+        targetId: body.name,
+        totalDistanceKm: 0,
+        remainingDistanceKm: 0,
+        remainingDurationSeconds: 0,
+        travelSpeedKmS: 0,
+        visualIntensity: 0,
+        progress: 1,
+      })
+      setTravelling(false)
+      return
+    }
+
     if (previousFocus.current !== focusedBody) {
       const departureId = previousFocus.current
       const previousTransition = transition.current

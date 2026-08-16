@@ -7,7 +7,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { getTravelMetricsSnapshot, subscribeToTravelMetrics } from '../data/travelMetricsStore'
 
-const DISTORTION_STRENGTH = 0.58
+const DISTORTION_STRENGTH = 1.58
 const DISTORTION_DAMPING = 12
 
 const travelDistortionShader = {
@@ -74,8 +74,8 @@ export default function TravelDistortion({ mobilePerformance }) {
   const pipeline = useMemo(() => {
     const composer = new EffectComposer(gl)
     composer.setPixelRatio(mobilePerformance ? 0.75 : Math.min(gl.getPixelRatio(), 1.5))
-    composer.renderTarget1.samples = mobilePerformance ? 0 : 2
-    composer.renderTarget2.samples = mobilePerformance ? 0 : 2
+    composer.renderTarget1.samples = mobilePerformance ? 1 : 2
+    composer.renderTarget2.samples = mobilePerformance ? 1 : 2
 
     const renderPass = new RenderPass(scene, camera)
     const distortionPass = new ShaderPass(travelDistortionShader)

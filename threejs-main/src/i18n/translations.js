@@ -41,6 +41,8 @@ export const TRANSLATIONS = Object.freeze({
     selectionHint: 'Click once to target a planet, then again to travel.',
     travelPanelOpen: 'Expand travel information',
     travelPanelClose: 'Collapse travel information',
+    instantTravel: 'Instant travel',
+    instantTravellingTo: (name) => 'Instant travel to ' + name,
     panel: {
       ariaLabel: 'Solar system settings',
       eyebrow: 'Simulation',
@@ -85,6 +87,8 @@ export const TRANSLATIONS = Object.freeze({
     loadingTitle: 'Système solaire',
     languageAction: 'Passer en anglais',
     travellingTo: (name) => `Navigation vers ${name}…`,
+    instantTravel: 'Voyage instantané',
+    instantTravellingTo: (name) => 'Voyage instantané vers ' + name,
     targetHint: (name, distance, duration) => `Cible : ${name} — ${distance} · trajet estimé : ${duration}`,
     targetCalculating: (name) => `Cible : ${name} — calcul du trajet…`,
     selectionHint: 'Cliquez une fois pour cibler une planète, puis une seconde fois pour voyager.',

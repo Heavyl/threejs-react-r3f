@@ -53,8 +53,12 @@ export const CELESTIAL_BODIES = Object.freeze(rawBodies.map((body) => {
 export const ORBITING_BODIES = Object.freeze(CELESTIAL_BODIES.filter((body) => body.orbitRadius > 0))
 export const BODY_BY_NAME = new Map(CELESTIAL_BODIES.map((body) => [body.name, body]))
 
+export const SKYBOX_BASE_PATH = ASSET_BASE_URL + 'textures/sky/'
+export const SKYBOX_FACE_FILES = Object.freeze([
+  'px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png',
+])
+
 export const TEXTURE_PATHS = Object.freeze({
-  stars: `${ASSET_BASE_URL}textures/8k_stars_milky_way.jpg`,
   sun: `${ASSET_BASE_URL}textures/sun/sunColor.jpg`,
   mercury: `${ASSET_BASE_URL}textures/mercury/mercuryColor.jpg`,
   venus: `${ASSET_BASE_URL}textures/venus/venusColor.jpg`,
@@ -73,13 +77,12 @@ export const TEXTURE_PATHS = Object.freeze({
 
 export const MOBILE_TEXTURE_PATHS = Object.freeze({
   ...TEXTURE_PATHS,
-  stars: `${ASSET_BASE_URL}textures/sky/milkyWay.jpg`,
   earth: `${ASSET_BASE_URL}textures/earth/earthColor.jpg`,
   moon: `${ASSET_BASE_URL}textures/moon/moonColor.jpg`,
 })
 
 export const COLOR_TEXTURE_KEYS = Object.freeze([
-  'stars', 'sun', 'mercury', 'venus', 'venusClouds', 'earth', 'moon',
+  'sun', 'mercury', 'venus', 'venusClouds', 'earth', 'moon',
   'mars', 'jupiter', 'saturn', 'saturnRings', 'uranus', 'neptune',
 ])
 
