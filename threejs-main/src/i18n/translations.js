@@ -1,5 +1,6 @@
 const BODY_LABELS = Object.freeze({
   Sun: { en: 'Sun', fr: 'Soleil' },
+  Ship: { en: 'You', fr: 'Vous' },
   Mercury: { en: 'Mercury', fr: 'Mercure' },
   Venus: { en: 'Venus', fr: 'Vénus' },
   Earth: { en: 'Earth', fr: 'Terre' },

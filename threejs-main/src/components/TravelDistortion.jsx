@@ -108,14 +108,8 @@ export default function TravelDistortion({ mobilePerformance }) {
       delta,
     )
     pipeline.distortionPass.uniforms.intensity.value = intensity.current
-    if (targetIntensity < 0.001 && intensity.current < 0.001) {
-      gl.setRenderTarget(null)
-      gl.render(scene, camera)
-      return
-    }
     pipeline.composer.render(delta)
   }, 1)
 
   return null
 }
-

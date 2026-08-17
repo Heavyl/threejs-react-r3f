@@ -24,7 +24,7 @@ export const MIN_TRAVEL_SPEED_KM_S = TRAVEL_SPEED_PRESETS[0].speedKmS
 export const MAX_TRAVEL_SPEED_KM_S = TRAVEL_SPEED_PRESETS.at(-1).speedKmS
 
 export const DEFAULT_SYSTEM_SETTINGS = Object.freeze({
-  timeScale: 600,
+  timeScale: 1,
   travelSpeedKmS: BASE_TRAVEL_SPEED_KM_S,
   globalScale: 1,
   showOrbits: true,
@@ -36,5 +36,4 @@ export const DEFAULT_SYSTEM_SETTINGS = Object.freeze({
   sunLightIntensity: 3,
   backgroundIntensity: 1,
 })
-
 

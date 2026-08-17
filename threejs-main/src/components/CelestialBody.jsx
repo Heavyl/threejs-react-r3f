@@ -1,11 +1,39 @@
-import { Html } from '@react-three/drei'
+import { Html, useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { getTravelMetricsSnapshot } from '../data/travelMetricsStore'
 import { getBodyLabel } from '../i18n/translations'
 import { createOrbitGeometry, setOrbitalPosition } from '../utils/orbit'
+import SolarAtmosphere from './SolarAtmosphere'
 
+const MARTIAN_MOON_MODELS = Object.freeze({
+  Phobos: `${import.meta.env.BASE_URL}models/phobos.glb`,
+  Deimos: `${import.meta.env.BASE_URL}models/deimos.glb`,
+})
+
+function IrregularMoon({ body, texture, onPointerDown }) {
+  const { scene } = useGLTF(MARTIAN_MOON_MODELS[body.name])
+  const geometry = useMemo(() => {
+    let moonGeometry
+    scene.traverse((object) => {
+      if (!moonGeometry && object.isMesh) moonGeometry = object.geometry
+    })
+    return moonGeometry
+  }, [scene])
+
+  return (
+    <mesh
+      geometry={geometry}
+      scale={body.renderRadius}
+      onPointerDown={onPointerDown}
+      castShadow
+      receiveShadow
+    >
+      <meshStandardMaterial map={texture} color="#ffffff" roughness={0.96} metalness={0} />
+    </mesh>
+  )
+}
 
 function Atmosphere({ type, textures, radius, segments }) {
   if (type === 'earth') {
@@ -96,6 +124,7 @@ export function CelestialBody({
   interactionDisabled,
   language,
   onSelect,
+  onLabelSelect,
 }) {
   const bodyRef = useRef()
   const spinRef = useRef()
@@ -123,6 +152,11 @@ export function CelestialBody({
     if (!interactionDisabled) onSelect(body.name)
   }
 
+  const selectBodyFromLabel = (event) => {
+    event.stopPropagation()
+    if (!interactionDisabled) onLabelSelect(body.name)
+  }
+
   const surfaceSegments = mobilePerformance ? (body.emissive ? 64 : 48) : (body.emissive ? 64 : 48)
   const atmosphereSegments = mobilePerformance ? 24 : 40
   const ringSegments = mobilePerformance ? 96 : 160
@@ -134,20 +168,24 @@ export function CelestialBody({
         rotation={[0, 0, THREE.MathUtils.degToRad(body.axialTilt || 0)]}
       >
         <group ref={spinRef}>
-          <mesh onPointerDown={selectBody}>
-            <sphereGeometry args={[body.renderRadius, surfaceSegments, surfaceSegments]} />
-            {body.emissive ? (
-              <meshBasicMaterial map={textures[body.texture]} />
-            ) : (
-              <meshStandardMaterial
-                map={textures[body.texture]}
-                normalMap={body.name === 'Earth' ? textures.earthNormal : undefined}
-                color={body.texture ? '#ffffff' : '#b8b8b8'}
-                roughness={0.82}
-                metalness={0}
-              />
-            )}
-          </mesh>
+          {MARTIAN_MOON_MODELS[body.name] ? (
+            <IrregularMoon body={body} texture={textures[body.texture]} onPointerDown={selectBody} />
+          ) : (
+            <mesh onPointerDown={selectBody}>
+              <sphereGeometry args={[body.renderRadius, surfaceSegments, surfaceSegments]} />
+              {body.emissive ? (
+                <meshBasicMaterial map={textures[body.texture]} />
+              ) : (
+                <meshStandardMaterial
+                  map={textures[body.texture]}
+                  normalMap={body.name === 'Earth' ? textures.earthNormal : undefined}
+                  color={body.texture ? '#ffffff' : '#b8b8b8'}
+                  roughness={0.82}
+                  metalness={0}
+                />
+              )}
+            </mesh>
+          )}
           {settings.showAtmospheres && body.atmosphere && (
             <Atmosphere type={body.atmosphere} textures={textures} radius={body.renderRadius} segments={atmosphereSegments} />
           )}
@@ -156,6 +194,15 @@ export function CelestialBody({
           )}
         </group>
       </group>
+
+      {body.emissive && settings.showAtmospheres && (
+        <SolarAtmosphere
+          radius={body.renderRadius}
+          texture={textures[body.texture]}
+          mobilePerformance={mobilePerformance}
+          timeScale={settings.timeScale}
+        />
+      )}
 
       {settings.showLabels && isParentFocused && (
         <Html
@@ -174,7 +221,7 @@ export function CelestialBody({
             aria-pressed={isSelected}
             aria-current={isFocused ? 'true' : undefined}
             disabled={interactionDisabled}
-            onPointerDown={selectBody}
+            onPointerDown={selectBodyFromLabel}
           >
             <span aria-hidden="true">𐤏</span> {getBodyLabel(body.name, language)}
           </button>
@@ -184,6 +231,7 @@ export function CelestialBody({
   )
 }
 
-
+useGLTF.preload(MARTIAN_MOON_MODELS.Phobos)
+useGLTF.preload(MARTIAN_MOON_MODELS.Deimos)
 
 

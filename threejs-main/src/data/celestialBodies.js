@@ -24,8 +24,8 @@ const rawBodies = [
   { name: 'Earth', radiusKm: 6371, texture: 'earth', orbitAu: 1, orbitalPeriodDays: 365.256, eccentricity: 0.01671123, planeTilt: 0, axialTilt: 23.44, rotationPeriodHours: 23.9345, phase: 2, atmosphere: 'earth' },
   { name: 'Moon', radiusKm: 1737.4, texture: 'moon', parent: 'Earth', semiMajorAxisKm: 384400, orbitalPeriodDays: 27.3217, eccentricity: 0.0549, planeTilt: 5.145, axialTilt: 6.68, rotationPeriodHours: 655.72, phase: 0.6 },
   { name: 'Mars', radiusKm: 3389.5, texture: 'mars', orbitAu: 1.523679, orbitalPeriodDays: 686.98, eccentricity: 0.0933941, planeTilt: 1.85, axialTilt: 25.19, rotationPeriodHours: 24.6229, phase: 2.8, atmosphere: 'mars' },
-  { name: 'Deimos', radiusKm: 6.2, parent: 'Mars', semiMajorAxisKm: 23463.2, orbitalPeriodDays: 1.26244, eccentricity: 0.00033, planeTilt: 1.79, rotationPeriodHours: 30.2986, phase: 1.8 },
-  { name: 'Phobos', radiusKm: 11.267, parent: 'Mars', semiMajorAxisKm: 9376, orbitalPeriodDays: 0.31891, eccentricity: 0.0151, planeTilt: 1.08, rotationPeriodHours: 7.65384, phase: 3.2 },
+  { name: 'Deimos', radiusKm: 6.2, texture: 'deimos', parent: 'Mars', semiMajorAxisKm: 23463.2, orbitalPeriodDays: 1.26244, eccentricity: 0.00033, planeTilt: 1.79, rotationPeriodHours: 30.2986, phase: 1.8 },
+  { name: 'Phobos', radiusKm: 11.267, texture: 'phobos', parent: 'Mars', semiMajorAxisKm: 9376, orbitalPeriodDays: 0.31891, eccentricity: 0.0151, planeTilt: 1.08, rotationPeriodHours: 7.65384, phase: 3.2 },
   { name: 'Jupiter', radiusKm: 69911, texture: 'jupiter', orbitAu: 5.2044, orbitalPeriodDays: 4332.59, eccentricity: 0.04838624, planeTilt: 1.304, axialTilt: 3.13, rotationPeriodHours: 9.925, phase: 3.7 },
   { name: 'Saturn', radiusKm: 58232, texture: 'saturn', orbitAu: 9.5826, orbitalPeriodDays: 10759.22, eccentricity: 0.05386179, planeTilt: 2.485, axialTilt: 26.73, rotationPeriodHours: 10.656, phase: 4.5, rings: true },
   { name: 'Uranus', radiusKm: 25362, texture: 'uranus', orbitAu: 19.2184, orbitalPeriodDays: 30688.5, eccentricity: 0.04725744, planeTilt: 0.773, axialTilt: 97.77, rotationPeriodHours: -17.24, phase: 5.1 },
@@ -68,6 +68,8 @@ export const TEXTURE_PATHS = Object.freeze({
   earthClouds: `${ASSET_BASE_URL}textures/earth/earthClouds2.jpg`,
   earthNormal: `${ASSET_BASE_URL}textures/earth/earthNormal2.jpg`,
   moon: `${ASSET_BASE_URL}textures/moon/moonColor.jpg`,
+  phobos: `${ASSET_BASE_URL}textures/phobos/phobosColor.png`,
+  deimos: `${ASSET_BASE_URL}textures/deimos/deimosColor.png`,
   mars: `${ASSET_BASE_URL}textures/mars/marsColor.jpg`,
   jupiter: `${ASSET_BASE_URL}textures/jupiter/jupiterColor.jpg`,
   saturn: `${ASSET_BASE_URL}textures/saturn/saturnColor.jpg`,
@@ -84,6 +86,6 @@ export const MOBILE_TEXTURE_PATHS = Object.freeze({
 
 export const COLOR_TEXTURE_KEYS = Object.freeze([
   'sun', 'mercury', 'venus', 'venusClouds', 'earth', 'moon',
-  'mars', 'jupiter', 'saturn', 'saturnRings', 'uranus', 'neptune',
+  'phobos', 'deimos', 'mars', 'jupiter', 'saturn', 'saturnRings', 'uranus', 'neptune',
 ])
 

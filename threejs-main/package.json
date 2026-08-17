@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "generate:moons": "node scripts/generate-martian-moons.mjs public/models",
     "preview": "vite preview"
   },
   "dependencies": {

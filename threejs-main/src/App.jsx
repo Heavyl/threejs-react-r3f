@@ -4,6 +4,7 @@ import { Suspense, useEffect, useRef, useState } from 'react'
 import { useSolarAudio } from './audio/useSolarAudio'
 import ControlPanel from './components/ControlPanel'
 import DistanceCounter from './components/DistanceCounter'
+import MinimapPanel from './components/MinimapPanel'
 import TravelDistortion from './components/TravelDistortion'
 import {
   DEFAULT_SYSTEM_SETTINGS,
@@ -137,7 +138,10 @@ export default function App() {
   const [selectedBody, setSelectedBody] = useState('Earth')
   const [focusedBody, setFocusedBody] = useState('Earth')
   const [travelling, setTravelling] = useState(false)
+  const [shipFocused, setShipFocused] = useState(false)
+  const [focusedSpacecraft, setFocusedSpacecraft] = useState(null)
   const [instantTravelRequest, setInstantTravelRequest] = useState(null)
+  const [cameraLookRequest, setCameraLookRequest] = useState(null)
   const [instantTravelFadeActive, setInstantTravelFadeActive] = useState(false)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [travelPreview, setTravelPreview] = useState(null)
@@ -147,7 +151,9 @@ export default function App() {
   const [hudCollapsed, setHudCollapsed] = useState(false)
   const [settingsCollapsed, setSettingsCollapsed] = useState(true)
   const [mobileTravelSpeedOpen, setMobileTravelSpeedOpen] = useState(false)
+  const [minimapCollapsed, setMinimapCollapsed] = useState(true)
   const instantTravelSequence = useRef(0)
+  const cameraLookSequence = useRef(0)
   const instantTravelTimerRef = useRef()
   const instantTravelRevealTimerRef = useRef()
   const appShellRef = useRef(null)
@@ -203,6 +209,11 @@ export default function App() {
   }
 
   const selectBody = (bodyName) => {
+    if ((shipFocused || focusedSpacecraft) && bodyName === focusedBody) return
+
+    setShipFocused(false)
+    setFocusedSpacecraft(null)
+    setCameraLookRequest(null)
 
     if (bodyName === selectedBody) {
       if (bodyName !== focusedBody) setFocusedBody(bodyName)
@@ -211,11 +222,49 @@ export default function App() {
 
     setSelectedBody(bodyName)
   }
+  const selectBodyFromMinimap = (bodyName) => {
+    if ((shipFocused || focusedSpacecraft) && bodyName === focusedBody) return
+
+    setShipFocused(false)
+    setFocusedSpacecraft(null)
+    setTravelPreview(null)
+
+    if (bodyName === selectedBody) {
+      setCameraLookRequest(null)
+      if (bodyName !== focusedBody) setFocusedBody(bodyName)
+      return
+    }
+
+    setSelectedBody(bodyName)
+    cameraLookSequence.current += 1
+    setCameraLookRequest({ id: cameraLookSequence.current, targetId: bodyName })
+  }
+  const selectShip = () => {
+    if (travelling) return
+    setCameraLookRequest(null)
+    setFocusedSpacecraft(null)
+    setSelectedBody(focusedBody)
+    setTravelPreview(null)
+    setShipFocused((current) => !current)
+  }
+  const selectSpacecraft = (spacecraftName) => {
+    if (travelling) return
+    setCameraLookRequest(null)
+    setShipFocused(false)
+    setSelectedBody(focusedBody)
+    setTravelPreview(null)
+    setFocusedSpacecraft((current) => current === spacecraftName ? null : spacecraftName)
+  }
+
 
   const text = TRANSLATIONS[language]
   const hasPendingTarget = selectedBody !== focusedBody
   const selectedLabel = getBodyLabel(selectedBody, language)
-  const focusedLabel = getBodyLabel(focusedBody, language)
+  const focusedLabel = focusedSpacecraft
+    ? focusedSpacecraft
+    : shipFocused
+      ? getBodyLabel('Ship', language)
+      : getBodyLabel(focusedBody, language)
 
   const canInstantTravel = travelling
   const instantTravelTargetId = hasPendingTarget ? selectedBody : focusedBody
@@ -246,9 +295,13 @@ export default function App() {
   return (
     <main ref={appShellRef} className="app-shell">
       <Canvas
-        camera={{ fov: 55, near: 0.0001, far: 5000000 }}
-        dpr={mobilePerformance ? 1 : [1.5, 1.5]}
+        camera={{ fov: 55, near: 0.000000001, far: 5000000 }}
+        dpr={mobilePerformance ? 1.5 : [1, 2]}
         gl={{ antialias: !mobilePerformance, powerPreference: 'high-performance', logarithmicDepthBuffer: true }}
+        onDoubleClick={() => {
+          if (shipFocused) setShipFocused(false)
+          if (focusedSpacecraft) setFocusedSpacecraft(null)
+        }}
       >
         <Suspense fallback={null}>
           <SolarSystem
@@ -256,11 +309,17 @@ export default function App() {
             focusedBody={focusedBody}
             language={language}
             travelling={travelling}
+            shipFocused={shipFocused}
+            focusedSpacecraft={focusedSpacecraft}
             settings={settings}
             mobilePerformance={mobilePerformance}
             onSelect={selectBody}
+            onLabelSelect={selectBodyFromMinimap}
             onTravellingChange={setTravelling}
             instantTravelRequest={instantTravelRequest}
+            cameraLookRequest={cameraLookRequest}
+            onShipSelect={selectShip}
+            onSpacecraftSelect={selectSpacecraft}
             onTravelPreviewChange={setTravelPreview}
           />
           <SceneReady onReady={() => setSceneRendered(true)} />
@@ -269,6 +328,20 @@ export default function App() {
       </Canvas>
 
       <LoadingScreen ready={sceneReady} progress={progress} text={text} />
+
+      <MinimapPanel
+        collapsed={minimapCollapsed}
+        focusedBody={focusedBody}
+        focusedSpacecraft={focusedSpacecraft}
+        language={language}
+        onSelectBody={selectBodyFromMinimap}
+        onSelectShip={selectShip}
+        onSelectSpacecraft={selectSpacecraft}
+        onCollapsedChange={setMinimapCollapsed}
+        selectedBody={selectedBody}
+        settings={settings}
+        shipFocused={shipFocused}
+      />
 
       <button
         className="language-switch language-switch--desktop"
@@ -297,11 +370,21 @@ export default function App() {
         collapsed={settingsCollapsed}
         onCollapsedChange={(value) => {
           setSettingsCollapsed(value)
-          if (!value) setMobileTravelSpeedOpen(false)
+          if (!value) {
+            setMobileTravelSpeedOpen(false)
+            setMinimapCollapsed(true)
+          }
+        }}
+        mapOpen={!minimapCollapsed}
+        onMapToggle={() => {
+          setMinimapCollapsed((value) => !value)
+          setMobileTravelSpeedOpen(false)
+          setSettingsCollapsed(true)
         }}
         travelSpeedOpen={mobileTravelSpeedOpen}
         onTravelSpeedToggle={() => {
           setMobileTravelSpeedOpen((value) => !value)
+          setMinimapCollapsed(true)
           setSettingsCollapsed(true)
         }}
         settings={settings}
@@ -385,10 +468,3 @@ export default function App() {
     </main>
   )
 }
-
-
-
-
-
-
-

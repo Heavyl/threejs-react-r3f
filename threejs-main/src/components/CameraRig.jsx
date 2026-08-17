@@ -1,5 +1,5 @@
 import { useFrame, useThree } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import {
   BODY_BY_NAME,
@@ -11,12 +11,20 @@ import {
 } from '../config/systemSettings'
 import { publishTravelMetrics } from '../data/travelMetricsStore'
 import { easeInOutCubic } from '../utils/orbit'
+import { createObjectFramingState, updateObjectFraming } from '../utils/objectFraming'
 
 const TARGETING_DURATION = 0.65
 const ACCELERATION_DURATION = 2
 const DECELERATION_DURATION = 2
+const CAMERA_DISTANCE_RADIUS_RATIO = 6
 const TOTAL_ACCELERATION_DURATION = TARGETING_DURATION + ACCELERATION_DURATION
+const SHIP_CAMERA_DISTANCE = 0.001
+const VEHICLE_FOCUS_DURATION = 3.75
 const METRICS_UPDATE_INTERVAL = 0.1
+const VEHICLE_FOCUS_EXIT_DURATION = 3.45
+const VEHICLE_VIEWPORT_FILL = 0.72
+const VEHICLE_SWITCH_CLEARANCE_RADIUS_RATIO = 1.7
+const MINIMAP_LOOK_DURATION = 0.75
 const PREVIEW_UPDATE_INTERVAL = 0.25
 const MIN_TRAVEL_FOCAL_LENGTH = 5
 const TRAVEL_FOCAL_RATIO = 0
@@ -24,6 +32,7 @@ const MAX_SHAKE_PITCH = THREE.MathUtils.degToRad(1.01)
 const MAX_SHAKE_YAW = THREE.MathUtils.degToRad(1.01)
 const MAX_SHAKE_ROLL = THREE.MathUtils.degToRad(1)
 const MAX_SHAKE_STRENGTH = 0.5
+const MARTIAN_MOON_TARGETS = new Set(['Phobos', 'Deimos'])
 
 function worldUnitsToKilometers(distance, globalScale) {
   return distance / globalScale / SCALE
@@ -53,6 +62,10 @@ function getTravelSpeedKmS(settings) {
 function calculateTravelDuration(distanceKm, settings) {
   return distanceKm / getTravelSpeedKmS(settings)
 }
+function getCameraDistance(body, globalScale) {
+  return body.renderRadius * globalScale * CAMERA_DISTANCE_RADIUS_RATIO
+}
+
 function getApproachDistance(body, globalScale) {
   const altitudeKm = Math.max(50, body.radiusKm * 0.65)
   return (body.radiusKm + altitudeKm) * SCALE * globalScale
@@ -111,6 +124,7 @@ function advanceTravelMotion(transition, delta, settings) {
     progress,
     targetingProgress,
     visualIntensity: Math.min(accelerationIntensity, decelerationIntensity),
+    arrivalProgress: 1 - decelerationIntensity,
     remainingDurationSeconds,
     travelSpeedKmS,
     hasArrived: transition.remainingDistanceKm <= 0,
@@ -121,10 +135,14 @@ export default function CameraRig({
   selectedBody,
   focusedBody,
   instantTravelRequest,
+  cameraLookRequest,
   bodyRefs,
   controlsRef,
   shipRef,
+  spacecraftRefs,
   travelPositionRef,
+  shipFocused,
+  focusedSpacecraft,
   settings,
   onTravellingChange,
   onTravelPreviewChange,
@@ -138,7 +156,15 @@ export default function CameraRig({
   const shakeElapsed = useRef(0)
   const lastTarget = useMemo(() => new THREE.Vector3(), [])
   const targetPosition = useMemo(() => new THREE.Vector3(), [])
+  const shipFocusActive = useRef(false)
+  const shipFocusMotion = useRef(null)
+  const shipExitMotion = useRef(null)
+  const vehicleFocusKey = useRef(null)
+  const vehicleSwitchPending = useRef(false)
+  const vehicleManualControl = useRef(false)
+  const vehicleFraming = useMemo(() => createObjectFramingState(), [])
   const shipPosition = useMemo(() => new THREE.Vector3(), [])
+  const focusAlignmentDirection = useMemo(() => new THREE.Vector3(), [])
   const destination = useMemo(() => new THREE.Vector3(), [])
   const previewOrigin = useMemo(() => new THREE.Vector3(), [])
   const targetDisplacement = useMemo(() => new THREE.Vector3(), [])
@@ -147,7 +173,25 @@ export default function CameraRig({
   const frameDelta = useMemo(() => new THREE.Vector3(), [])
   const viewOffset = useMemo(() => new THREE.Vector3(1, 0.55, 1).normalize(), [])
   const transition = useRef(null)
+  const focusDestination = useMemo(() => new THREE.Vector3(), [])
+  const focusEndDirection = useMemo(() => new THREE.Vector3(), [])
+  const focusOrbitDirection = useMemo(() => new THREE.Vector3(), [])
+  const focusOrbitRotation = useMemo(() => new THREE.Quaternion(), [])
+  const focusOrbitStep = useMemo(() => new THREE.Quaternion(), [])
   const handledInstantTravelRequest = useRef(0)
+  const handledCameraLookRequest = useRef(0)
+  const cameraLookMotion = useRef(null)
+  const cameraLookPosition = useMemo(() => new THREE.Vector3(), [])
+  const cameraLookDirection = useMemo(() => new THREE.Vector3(), [])
+  const cameraLookStart = useMemo(() => new THREE.Vector3(), [])
+  const cameraLookDestination = useMemo(() => new THREE.Vector3(), [])
+  const travelCameraTarget = useMemo(() => new THREE.Vector3(), [])
+  const travelCameraUp = useMemo(() => new THREE.Vector3(), [])
+  const travelParentPosition = useMemo(() => new THREE.Vector3(), [])
+  const travelRouteEndDirection = useMemo(() => new THREE.Vector3(), [])
+  const travelRouteDirection = useMemo(() => new THREE.Vector3(), [])
+  const travelRouteRotation = useMemo(() => new THREE.Quaternion(), [])
+  const travelRouteStep = useMemo(() => new THREE.Quaternion(), [])
   const travelling = useRef(false)
 
   const setTravelling = (value) => {
@@ -156,6 +200,16 @@ export default function CameraRig({
     onTravellingChange(value)
   }
 
+  useEffect(() => {
+    const controls = controlsRef.current
+    if (!controls) return undefined
+    const handleInteractionStart = () => {
+      if (vehicleFocusKey.current) vehicleManualControl.current = true
+    }
+    controls.addEventListener('start', handleInteractionStart)
+    return () => controls.removeEventListener('start', handleInteractionStart)
+  }, [controlsRef])
+
   useFrame((_, delta) => {
     const targetObject = bodyRefs.current[focusedBody]
     const controls = controlsRef.current
@@ -163,10 +217,7 @@ export default function CameraRig({
     if (!targetObject || !controls || !body) return
 
     targetObject.getWorldPosition(targetPosition)
-    const cameraDistance = Math.max(
-      body.renderRadius * settings.globalScale * 6,
-      0.02 * settings.globalScale,
-    )
+    const cameraDistance = getCameraDistance(body, settings.globalScale)
 
     if (!initialized.current) {
       camera.position.copy(targetPosition).addScaledVector(viewOffset, cameraDistance)
@@ -175,7 +226,6 @@ export default function CameraRig({
       initialized.current = true
       return
     }
-
 
     previewElapsed.current += delta
     const hasPreviewTarget = selectedBody !== focusedBody
@@ -210,6 +260,360 @@ export default function CameraRig({
       previewBody.current = null
       previewElapsed.current = Infinity
       onTravelPreviewChange(null)
+    }
+
+    if (!cameraLookRequest) {
+      cameraLookMotion.current = null
+    } else if (cameraLookRequest.id !== handledCameraLookRequest.current) {
+      handledCameraLookRequest.current = cameraLookRequest.id
+      const lookObject = bodyRefs.current[cameraLookRequest.targetId]
+      if (lookObject && cameraLookRequest.targetId !== focusedBody) {
+        lookObject.getWorldPosition(cameraLookPosition)
+        shipFocusActive.current = false
+        shipFocusMotion.current = null
+        shipExitMotion.current = null
+        cameraLookMotion.current = {
+          elapsed: 0,
+          targetId: cameraLookRequest.targetId,
+          startOffset: camera.position.clone().sub(targetPosition),
+          startTargetOffset: controls.target.clone().sub(targetPosition),
+          distance: Math.max(
+            camera.position.distanceTo(targetPosition),
+            cameraDistance,
+          ),
+        }
+      } else {
+        cameraLookMotion.current = null
+      }
+    }
+
+    if (cameraLookMotion.current && previousFocus.current !== focusedBody) {
+      cameraLookMotion.current = null
+    }
+
+    const lookMotion = cameraLookMotion.current
+    if (lookMotion && !travelling.current && !transition.current) {
+      const lookObject = bodyRefs.current[lookMotion.targetId]
+      if (lookObject) {
+        lookObject.getWorldPosition(cameraLookPosition)
+        cameraLookDirection
+          .copy(cameraLookPosition)
+          .sub(targetPosition)
+          .normalize()
+          .multiplyScalar(-1)
+        cameraLookDirection.y += 0.22
+        cameraLookDirection.normalize()
+        cameraLookStart.copy(targetPosition).add(lookMotion.startOffset)
+        cameraLookDestination
+          .copy(targetPosition)
+          .addScaledVector(cameraLookDirection, lookMotion.distance)
+        lookMotion.elapsed += delta
+        const lookProgress = easeInOutCubic(THREE.MathUtils.clamp(
+          lookMotion.elapsed / MINIMAP_LOOK_DURATION,
+          0,
+          1,
+        ))
+        camera.position.lerpVectors(
+          cameraLookStart,
+          cameraLookDestination,
+          lookProgress,
+        )
+        controls.target
+          .copy(targetPosition)
+          .add(lookMotion.startTargetOffset)
+          .lerp(targetPosition, lookProgress)
+        controls.enabled = true
+        controls.enableDamping = true
+        controls.update()
+        lastTarget.copy(targetPosition)
+        if (lookProgress >= 1) cameraLookMotion.current = null
+        return
+      }
+      cameraLookMotion.current = null
+    }
+
+    const currentVehicleFocusKey = focusedSpacecraft ?? (shipFocused ? 'Ship' : null)
+    if (currentVehicleFocusKey !== vehicleFocusKey.current) {
+      const isSwitchingVehicle = Boolean(
+        vehicleFocusKey.current && currentVehicleFocusKey,
+      )
+      vehicleFocusKey.current = currentVehicleFocusKey
+      vehicleSwitchPending.current = isSwitchingVehicle
+      vehicleManualControl.current = false
+      if (isSwitchingVehicle) {
+        shipFocusActive.current = false
+        shipFocusMotion.current = null
+        shipExitMotion.current = null
+      }
+    }
+
+    const canFocusShip = (shipFocused || focusedSpacecraft) && !travelling.current && !transition.current
+    const ship = shipRef.current
+    const focusObject = focusedSpacecraft
+      ? spacecraftRefs[focusedSpacecraft]?.current
+      : ship
+
+    if (canFocusShip && focusObject) {
+      const framing = updateObjectFraming(focusObject, camera, vehicleFraming, {
+        viewportFill: VEHICLE_VIEWPORT_FILL,
+        fallbackDistance: SHIP_CAMERA_DISTANCE * settings.globalScale,
+      })
+      shipPosition.copy(framing.center)
+      const focusedVehicleDistance = framing.distance
+
+      if (!shipFocusActive.current) {
+        const switchingVehicle = vehicleSwitchPending.current
+        vehicleSwitchPending.current = false
+        viewOffset.copy(camera.position).sub(controls.target)
+        if (viewOffset.lengthSq() < 0.000001) viewOffset.set(1, 0.35, 1)
+        viewOffset.normalize()
+        shipFocusActive.current = true
+        shipExitMotion.current = null
+        focusOrbitDirection.copy(camera.position).sub(targetPosition)
+        shipFocusMotion.current = {
+          elapsed: 0,
+          startCamera: camera.position.clone(),
+          startTarget: controls.target.clone(),
+          viewOffset: viewOffset.clone(),
+          startDirection: focusOrbitDirection.clone().normalize(),
+          startRadius: focusOrbitDirection.length(),
+          switchingVehicle,
+        }
+      }
+
+      if (vehicleManualControl.current) shipFocusMotion.current = null
+      const focusMotion = shipFocusMotion.current
+      if (focusMotion) {
+        focusMotion.elapsed += delta
+        const focusProgress = easeInOutCubic(THREE.MathUtils.clamp(
+          focusMotion.elapsed / VEHICLE_FOCUS_DURATION,
+          0,
+          1,
+        ))
+        focusAlignmentDirection.copy(shipPosition).sub(targetPosition)
+        if (focusAlignmentDirection.lengthSq() < 0.0000001) {
+          focusAlignmentDirection.copy(focusMotion.viewOffset)
+        } else {
+          focusAlignmentDirection.normalize()
+        }
+        focusDestination
+          .copy(shipPosition)
+          .addScaledVector(focusAlignmentDirection, focusedVehicleDistance)
+        focusEndDirection.copy(focusDestination).sub(targetPosition)
+        const focusEndRadius = focusEndDirection.length()
+        if (focusEndRadius > 0.0000001) {
+          focusEndDirection.normalize()
+          focusOrbitRotation.setFromUnitVectors(
+            focusMotion.startDirection,
+            focusEndDirection,
+          )
+          let orbitProgress
+          let focusRadius
+          if (focusMotion.switchingVehicle) {
+            const departureProgress = easeInOutCubic(THREE.MathUtils.clamp(
+              focusProgress / 0.3,
+              0,
+              1,
+            ))
+            orbitProgress = easeInOutCubic(THREE.MathUtils.clamp(
+              (focusProgress - 0.2) / 0.55,
+              0,
+              1,
+            ))
+            const arrivalProgress = easeInOutCubic(THREE.MathUtils.clamp(
+              (focusProgress - 0.7) / 0.3,
+              0,
+              1,
+            ))
+            const switchClearanceRadius = Math.max(
+              focusMotion.startRadius,
+              focusEndRadius,
+              body.renderRadius
+                * settings.globalScale
+                * VEHICLE_SWITCH_CLEARANCE_RADIUS_RATIO,
+            )
+            const departureRadius = THREE.MathUtils.lerp(
+              focusMotion.startRadius,
+              switchClearanceRadius,
+              departureProgress,
+            )
+            focusRadius = THREE.MathUtils.lerp(
+              departureRadius,
+              focusEndRadius,
+              arrivalProgress,
+            )
+          } else {
+            orbitProgress = easeInOutCubic(THREE.MathUtils.clamp(
+              focusProgress / 0.68,
+              0,
+              1,
+            ))
+            const approachProgress = easeInOutCubic(THREE.MathUtils.clamp(
+              (focusProgress - 0.28) / 0.72,
+              0,
+              1,
+            ))
+            const safeRadius = body.renderRadius * settings.globalScale * 1.12
+            const interpolatedRadius = THREE.MathUtils.lerp(
+              focusMotion.startRadius,
+              focusEndRadius,
+              approachProgress,
+            )
+            const clearanceRadius = THREE.MathUtils.lerp(
+              Math.min(focusMotion.startRadius, focusEndRadius),
+              safeRadius,
+              Math.sin(Math.PI * focusProgress),
+            )
+            focusRadius = Math.max(interpolatedRadius, clearanceRadius)
+          }
+          focusOrbitStep.identity().slerp(focusOrbitRotation, orbitProgress)
+          focusOrbitDirection
+            .copy(focusMotion.startDirection)
+            .applyQuaternion(focusOrbitStep)
+            .normalize()
+          camera.position
+            .copy(targetPosition)
+            .addScaledVector(focusOrbitDirection, focusRadius)
+        } else {
+          camera.position.lerpVectors(
+            focusMotion.startCamera,
+            focusDestination,
+            focusProgress,
+          )
+        }
+        if (focusMotion.switchingVehicle) {
+          const departureLookProgress = easeInOutCubic(THREE.MathUtils.clamp(
+            focusProgress / 0.3,
+            0,
+            1,
+          ))
+          const arrivalLookProgress = easeInOutCubic(THREE.MathUtils.clamp(
+            (focusProgress - 0.62) / 0.38,
+            0,
+            1,
+          ))
+          controls.target.lerpVectors(
+            focusMotion.startTarget,
+            targetPosition,
+            departureLookProgress,
+          )
+          controls.target.lerp(shipPosition, arrivalLookProgress)
+        } else {
+          controls.target.lerpVectors(
+            focusMotion.startTarget,
+            shipPosition,
+            focusProgress,
+          )
+        }
+        if (focusProgress >= 1) shipFocusMotion.current = null
+      } else {
+        if (vehicleManualControl.current) {
+          frameDelta.copy(shipPosition).sub(lastTarget)
+          camera.position.add(frameDelta)
+        } else {
+          focusAlignmentDirection.copy(shipPosition).sub(targetPosition)
+          if (focusAlignmentDirection.lengthSq() < 0.0000001) {
+            focusAlignmentDirection.copy(viewOffset)
+          } else {
+            focusAlignmentDirection.normalize()
+          }
+          focusDestination
+            .copy(shipPosition)
+            .addScaledVector(focusAlignmentDirection, focusedVehicleDistance)
+          camera.position.copy(focusDestination)
+        }
+        controls.target.copy(shipPosition)
+      }
+
+      controls.enabled = true
+      if (vehicleManualControl.current) {
+        controls.enableDamping = true
+        controls.update()
+      } else {
+        controls.enableDamping = false
+        camera.lookAt(controls.target)
+      }
+      lastTarget.copy(shipPosition)
+      return
+    }
+
+    if (shipFocusActive.current) {
+      shipFocusActive.current = false
+      shipFocusMotion.current = null
+      viewOffset.copy(camera.position).sub(controls.target)
+      if (viewOffset.lengthSq() < 0.000001) viewOffset.set(1, 0.55, 1)
+      viewOffset.normalize()
+      focusOrbitDirection.copy(camera.position).sub(targetPosition)
+      shipExitMotion.current = {
+        elapsed: 0,
+        startCamera: camera.position.clone(),
+        startTarget: controls.target.clone(),
+        viewOffset: viewOffset.clone(),
+        startDirection: focusOrbitDirection.clone().normalize(),
+        startRadius: focusOrbitDirection.length(),
+      }
+    }
+
+    const exitMotion = shipExitMotion.current
+    if (exitMotion) {
+      exitMotion.elapsed += delta
+      const exitProgress = easeInOutCubic(THREE.MathUtils.clamp(
+        exitMotion.elapsed / VEHICLE_FOCUS_EXIT_DURATION,
+        0,
+        1,
+      ))
+      focusDestination
+        .copy(targetPosition)
+        .addScaledVector(exitMotion.viewOffset, cameraDistance)
+      focusEndDirection.copy(focusDestination).sub(targetPosition).normalize()
+      focusOrbitRotation.setFromUnitVectors(
+        exitMotion.startDirection,
+        focusEndDirection,
+      )
+      const exitRadiusProgress = easeInOutCubic(THREE.MathUtils.clamp(
+        exitProgress / 0.58,
+        0,
+        1,
+      ))
+      const exitOrbitProgress = easeInOutCubic(THREE.MathUtils.clamp(
+        (exitProgress - 0.18) / 0.82,
+        0,
+        1,
+      ))
+      focusOrbitStep.identity().slerp(focusOrbitRotation, exitOrbitProgress)
+      focusOrbitDirection
+        .copy(exitMotion.startDirection)
+        .applyQuaternion(focusOrbitStep)
+        .normalize()
+      camera.position
+        .copy(targetPosition)
+        .addScaledVector(
+          focusOrbitDirection,
+          Math.max(
+            THREE.MathUtils.lerp(
+              exitMotion.startRadius,
+              cameraDistance,
+              exitRadiusProgress,
+            ),
+            THREE.MathUtils.lerp(
+              Math.min(exitMotion.startRadius, cameraDistance),
+              body.renderRadius * settings.globalScale * 1.12,
+              Math.sin(Math.PI * exitProgress),
+            ),
+          ),
+        )
+      controls.target.lerpVectors(
+        exitMotion.startTarget,
+        targetPosition,
+        exitProgress,
+      )
+      controls.enabled = true
+      controls.enableDamping = true
+      controls.update()
+      lastTarget.copy(targetPosition)
+
+      if (exitProgress < 1) return
+      shipExitMotion.current = null
     }
     const isInstantTravel = (
       instantTravelRequest?.targetId === focusedBody
@@ -269,6 +673,21 @@ export default function CameraRig({
       const travelDistance = shipPosition.distanceTo(destination)
       const totalDistanceKm = worldUnitsToKilometers(travelDistance, settings.globalScale)
       const initialDurationSeconds = calculateTravelDuration(totalDistanceKm, settings)
+      let parentRoute = null
+      if (MARTIAN_MOON_TARGETS.has(body.name) && body.parent) {
+        const parentObject = bodyRefs.current[body.parent]
+        const parentBody = BODY_BY_NAME.get(body.parent)
+        if (parentObject && parentBody) {
+          parentObject.getWorldPosition(travelParentPosition)
+          travelRouteDirection.copy(shipPosition).sub(travelParentPosition)
+          parentRoute = {
+            parentId: body.parent,
+            startDirection: travelRouteDirection.clone().normalize(),
+            startRadius: travelRouteDirection.length(),
+            safeRadius: parentBody.renderRadius * settings.globalScale * 1.08,
+          }
+        }
+      }
       if (!travelPositionRef.current) travelPositionRef.current = new THREE.Vector3()
       travelPositionRef.current.copy(shipPosition)
       transition.current = {
@@ -282,6 +701,14 @@ export default function CameraRig({
         approachDistance: getApproachDistance(body, settings.globalScale),
         totalDistanceKm,
         baseFocalLength: previousTransition?.baseFocalLength ?? camera.getFocalLength(),
+        startCameraPosition: camera.position.clone(),
+        startControlsTarget: controls.target.clone(),
+        cameraViewOffset: camera.position.clone().sub(controls.target).normalize(),
+        startCameraDistance: Math.max(
+          camera.position.distanceTo(controls.target),
+          cameraDistance,
+        ),
+        parentRoute,
       }
       metricsElapsed.current = 0
       publishTravelMetrics({
@@ -298,14 +725,13 @@ export default function CameraRig({
         visualIntensity: 0,
         progress: 0,
       })
-      controls.target.copy(shipPosition)
-      controls.enabled = true
+      controls.enabled = false
       controls.enableDamping = true
       setTravelling(true)
     }
 
     if (transition.current) {
-      controls.enabled = true
+      controls.enabled = false
       controls.enableDamping = true
       const motion = advanceTravelMotion(transition.current, delta, settings)
       transition.current.progress = motion.progress
@@ -314,13 +740,86 @@ export default function CameraRig({
       destination.copy(transition.current.direction)
         .multiplyScalar(transition.current.approachDistance)
         .add(targetPosition)
-      travelPositionRef.current.lerpVectors(transition.current.startPosition, destination, motion.progress)
+      const parentRoute = transition.current.parentRoute
+      const parentObject = parentRoute
+        ? bodyRefs.current[parentRoute.parentId]
+        : null
+      if (parentRoute && parentObject) {
+        parentObject.getWorldPosition(travelParentPosition)
+        travelRouteEndDirection.copy(destination).sub(travelParentPosition)
+        const routeEndRadius = travelRouteEndDirection.length()
+        if (routeEndRadius > 0.0000001) {
+          travelRouteEndDirection.normalize()
+          travelRouteRotation.setFromUnitVectors(
+            parentRoute.startDirection,
+            travelRouteEndDirection,
+          )
+          travelRouteStep.identity().slerp(travelRouteRotation, motion.progress)
+          travelRouteDirection
+            .copy(parentRoute.startDirection)
+            .applyQuaternion(travelRouteStep)
+            .normalize()
+          travelPositionRef.current
+            .copy(travelParentPosition)
+            .addScaledVector(
+              travelRouteDirection,
+              Math.max(
+                parentRoute.safeRadius,
+                THREE.MathUtils.lerp(
+                  parentRoute.startRadius,
+                  routeEndRadius,
+                  motion.progress,
+                ),
+              ),
+            )
+        } else {
+          travelPositionRef.current.copy(destination)
+        }
+      } else {
+        travelPositionRef.current.lerpVectors(
+          transition.current.startPosition,
+          destination,
+          motion.progress,
+        )
+      }
       const ship = shipRef.current
       if (ship) {
         ship.getWorldPosition(shipPosition)
-        frameDelta.copy(shipPosition).sub(controls.target)
-        camera.position.add(frameDelta)
-        controls.target.copy(shipPosition)
+        travelCameraTarget.lerpVectors(
+          shipPosition,
+          targetPosition,
+          motion.arrivalProgress,
+        )
+        const travelCameraDistance = THREE.MathUtils.lerp(
+          transition.current.startCameraDistance,
+          cameraDistance,
+          motion.arrivalProgress,
+        )
+        const framingIntensity = motion.targetingProgress * (1 - motion.arrivalProgress)
+        travelCameraUp
+          .set(0, 1, 0)
+          .applyQuaternion(camera.quaternion)
+          .normalize()
+        travelCameraTarget.addScaledVector(
+          travelCameraUp,
+          travelCameraDistance * 0.26 * framingIntensity,
+        )
+        focusDestination
+          .copy(travelCameraTarget)
+          .addScaledVector(
+            transition.current.cameraViewOffset,
+            travelCameraDistance,
+          )
+        controls.target.lerpVectors(
+          transition.current.startControlsTarget,
+          travelCameraTarget,
+          motion.targetingProgress,
+        )
+        camera.position.lerpVectors(
+          transition.current.startCameraPosition,
+          focusDestination,
+          motion.targetingProgress,
+        )
       }
       const travelFocalLength = Math.max(
         MIN_TRAVEL_FOCAL_LENGTH,
@@ -363,8 +862,12 @@ export default function CameraRig({
 
       if (hasArrived) {
         camera.setFocalLength(transition.current.baseFocalLength)
-        frameDelta.copy(targetPosition).sub(controls.target)
-        camera.position.add(frameDelta)
+        viewOffset.copy(camera.position).sub(controls.target)
+        if (viewOffset.lengthSq() < 0.000001) viewOffset.set(1, 0.55, 1)
+        viewOffset.normalize()
+        camera.position
+          .copy(targetPosition)
+          .addScaledVector(viewOffset, cameraDistance)
         controls.target.copy(targetPosition)
         controls.update()
         lastTarget.copy(targetPosition)

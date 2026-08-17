@@ -1,4 +1,4 @@
-import { useGLTF } from '@react-three/drei'
+import { Html, useGLTF } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react'
 import * as THREE from 'three'
@@ -8,34 +8,22 @@ import {
   subscribeToTravelMetrics,
 } from '../data/travelMetricsStore'
 import { easeInOutCubic } from '../utils/orbit'
+import { getBodyLabel } from '../i18n/translations'
 
 const SCREEN_ANCHOR_DISTANCE = 1
 const MODEL_PATH = `${import.meta.env.BASE_URL}models/travel-ship.glb`
 const MIN_PANEL_CLEARANCE_PX = 230
 const MAX_PANEL_CLEARANCE_PX = 285
 const SCREEN_HEIGHT_RATIO = 0.055
-const ORBIT_SHIP_RADIUS_RATIO = 0.1
+// Keeps the model's full silhouette comfortably below Phobos's rendered diameter.
+const FIXED_ORBIT_SHIP_SCALE = 0.0001
 const MODEL_PITCH = -0.24
 const ORBIT_PHASE = 0.35
 const MIN_ORBIT_ALTITUDE_KM = 50
 const ORBIT_ALTITUDE_RADIUS_RATIO = 0.65
-const FALLBACK_ORBIT_PERIOD_SECONDS = 7200
+const ISS_ORBITAL_SPEED_KM_S = 7.66
 const ORBIT_TILT_AXIS = new THREE.Vector3(0, 0, 1)
-
-const GRAVITATIONAL_PARAMETERS_KM3_S2 = Object.freeze({
-  Sun: 1.32712440018e11,
-  Mercury: 22031.86855,
-  Venus: 324858.592,
-  Earth: 398600.435507,
-  Moon: 4902.800118,
-  Mars: 42828.375214,
-  Phobos: 0.0007112,
-  Deimos: 0.0000962,
-  Jupiter: 126686531.9,
-  Saturn: 37931206.23,
-  Uranus: 5793951.3,
-  Neptune: 6835099.97,
-})
+const SHIP_ORBIT_ARC_RADIANS = Math.PI / 2
 
 function getParkingOrbit(body) {
   const altitudeKm = Math.max(
@@ -43,15 +31,12 @@ function getParkingOrbit(body) {
     body.radiusKm * ORBIT_ALTITUDE_RADIUS_RATIO,
   )
   const radiusKm = body.radiusKm + altitudeKm
-  const gravitationalParameter = GRAVITATIONAL_PARAMETERS_KM3_S2[body.name]
-  const angularSpeed = gravitationalParameter
-    ? Math.sqrt(gravitationalParameter / radiusKm ** 3)
-    : Math.PI * 2 / FALLBACK_ORBIT_PERIOD_SECONDS
+  const angularSpeed = ISS_ORBITAL_SPEED_KM_S / radiusKm
 
   return { radiusKm, angularSpeed }
 }
 
-export default function TravelShip({ bodyRefs, focusedBody, simulationTimeRef, settings, shipRef: sharedShipRef, travelPositionRef }) {
+export default function TravelShip({ bodyRefs, focusedBody, language, mobilePerformance, shipFocused, onSelect, simulationTimeRef, settings, shipRef: sharedShipRef, travelPositionRef }) {
   const { camera } = useThree()
   const { scene } = useGLTF(MODEL_PATH)
   const shipModel = useMemo(() => {
@@ -69,6 +54,8 @@ export default function TravelShip({ bodyRefs, focusedBody, simulationTimeRef, s
   const shipRef = sharedShipRef
   const leftTrailRef = useRef()
   const rightTrailRef = useRef()
+  const orbitTrailRef = useRef()
+  const orbitBodyRef = useRef(focusedBody)
   const initialized = useRef(false)
   const elapsedTime = useRef(0)
   const launchScale = useRef(0.0001)
@@ -85,8 +72,29 @@ export default function TravelShip({ bodyRefs, focusedBody, simulationTimeRef, s
   const cameraUp = useMemo(() => new THREE.Vector3(), [])
   const targetPosition = useMemo(() => new THREE.Vector3(), [])
   const travelDirection = useMemo(() => new THREE.Vector3(), [])
+  const previousTravelPosition = useMemo(() => new THREE.Vector3(), [])
+  const travelUp = useMemo(() => new THREE.Vector3(), [])
   const lookTarget = useMemo(() => new THREE.Vector3(), [])
   const orientation = useMemo(() => new THREE.Matrix4(), [])
+  const hasPreviousTravelPosition = useRef(false)
+  const orbitTrailSegments = mobilePerformance ? 32 : 64
+  const orbitTrailGeometry = useMemo(() => {
+    const geometry = new THREE.BufferGeometry()
+    const positions = new Float32Array((orbitTrailSegments + 1) * 3)
+    const colors = new Float32Array((orbitTrailSegments + 1) * 3)
+    const tailColor = new THREE.Color('#10263b')
+    const shipColor = new THREE.Color('#8edbff')
+
+    for (let index = 0; index <= orbitTrailSegments; index += 1) {
+      const progress = index / orbitTrailSegments
+      const color = tailColor.clone().lerp(shipColor, progress ** 1.6)
+      color.toArray(colors, index * 3)
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+    return geometry
+  }, [orbitTrailSegments])
   const metrics = useSyncExternalStore(
     subscribeToTravelMetrics,
     getTravelMetricsSnapshot,
@@ -99,6 +107,8 @@ export default function TravelShip({ bodyRefs, focusedBody, simulationTimeRef, s
     })
   }, [shipModel])
 
+
+  useEffect(() => () => orbitTrailGeometry.dispose(), [orbitTrailGeometry])
   const setOverlayMode = (enabled) => {
     if (overlayMode.current === enabled) return
     overlayMode.current = enabled
@@ -123,10 +133,20 @@ export default function TravelShip({ bodyRefs, focusedBody, simulationTimeRef, s
     cameraUp.set(0, 1, 0).applyQuaternion(camera.quaternion).normalize()
 
     if (!liveMetrics.active) {
+      hasPreviousTravelPosition.current = false
+      // Keep the departure position for one frame so CameraRig can initialize
+      // the journey before this ship starts orbiting the newly focused body.
+      if (orbitBodyRef.current !== focusedBody) {
+        orbitBodyRef.current = focusedBody
+        if (orbitTrailRef.current) orbitTrailRef.current.visible = false
+        return
+      }
+
       const focusedObject = bodyRefs.current[focusedBody]
       const focusedBodyData = BODY_BY_NAME.get(focusedBody)
       if (!focusedObject || !focusedBodyData) {
         ship.visible = false
+        if (orbitTrailRef.current) orbitTrailRef.current.visible = false
         return
       }
 
@@ -148,6 +168,27 @@ export default function TravelShip({ bodyRefs, focusedBody, simulationTimeRef, s
       const axialTilt = THREE.MathUtils.degToRad(focusedBodyData.axialTilt || 0)
       orbitOffset.applyAxisAngle(ORBIT_TILT_AXIS, axialTilt)
       ship.position.copy(currentOrigin).add(orbitOffset)
+      const orbitTrail = orbitTrailRef.current
+      if (orbitTrail) {
+        const positionAttribute = orbitTrailGeometry.getAttribute('position')
+        const positions = positionAttribute.array
+        const cosTilt = Math.cos(axialTilt)
+        const sinTilt = Math.sin(axialTilt)
+
+        for (let index = 0; index <= orbitTrailSegments; index += 1) {
+          const progress = index / orbitTrailSegments
+          const pointAngle = orbitAngle - SHIP_ORBIT_ARC_RADIANS * (1 - progress)
+          const radialX = Math.cos(pointAngle) * orbitRadius
+          const offset = index * 3
+          positions[offset] = radialX * cosTilt
+          positions[offset + 1] = radialX * sinTilt
+          positions[offset + 2] = Math.sin(pointAngle) * orbitRadius
+        }
+
+        positionAttribute.needsUpdate = true
+        orbitTrail.position.copy(currentOrigin)
+        orbitTrail.visible = settings.showOrbits
+      }
       travelDirection
         .set(-Math.sin(orbitAngle), 0, Math.cos(orbitAngle))
         .applyAxisAngle(ORBIT_TILT_AXIS, axialTilt)
@@ -161,6 +202,7 @@ export default function TravelShip({ bodyRefs, focusedBody, simulationTimeRef, s
       ship.quaternion.setFromRotationMatrix(orientation)
       ship.visible = true
     } else {
+      if (orbitTrailRef.current) orbitTrailRef.current.visible = false
       let startedThisFrame = false
       if (!initialized.current) {
         launchScale.current = Math.max(0.0001, ship.scale.x)
@@ -170,20 +212,37 @@ export default function TravelShip({ bodyRefs, focusedBody, simulationTimeRef, s
       }
 
       if (isPlaying && !startedThisFrame) elapsedTime.current += delta
+      if (!hasPreviousTravelPosition.current) {
+        previousTravelPosition.copy(ship.position)
+        hasPreviousTravelPosition.current = true
+      }
       if (travelPositionRef.current) ship.position.copy(travelPositionRef.current)
       setOverlayMode(false)
 
-      const targetBody = bodyRefs.current[liveMetrics.targetId]
-      if (targetBody) {
-        targetBody.getWorldPosition(targetPosition)
-        travelDirection.copy(targetPosition).sub(ship.position)
-        if (travelDirection.lengthSq() > 0.000001) {
-          travelDirection.normalize()
-          lookTarget.copy(ship.position).add(travelDirection)
-          orientation.lookAt(ship.position, lookTarget, cameraUp)
-          ship.quaternion.setFromRotationMatrix(orientation)
+      // Follow the actual route tangent. Pointing directly at the destination
+      // becomes visibly wrong on curved approaches that avoid a planet.
+      travelDirection.copy(ship.position).sub(previousTravelPosition)
+      if (travelDirection.lengthSq() < 1e-20) {
+        const targetBody = bodyRefs.current[liveMetrics.targetId]
+        if (targetBody) {
+          targetBody.getWorldPosition(targetPosition)
+          travelDirection.copy(targetPosition).sub(ship.position)
         }
       }
+      if (travelDirection.lengthSq() >= 1e-20) {
+        travelDirection.normalize()
+        travelUp.copy(cameraUp)
+        if (Math.abs(travelUp.dot(travelDirection)) > 0.98) {
+          travelUp.set(0, 1, 0)
+          if (Math.abs(travelUp.dot(travelDirection)) > 0.98) {
+            travelUp.set(1, 0, 0)
+          }
+        }
+        lookTarget.copy(ship.position).add(travelDirection)
+        orientation.lookAt(ship.position, lookTarget, travelUp)
+        ship.quaternion.setFromRotationMatrix(orientation)
+      }
+      previousTravelPosition.copy(ship.position)
       ship.visible = true
     }
 
@@ -208,10 +267,7 @@ export default function TravelShip({ bodyRefs, focusedBody, simulationTimeRef, s
         easeInOutCubic(launchProgress),
       ))
     } else {
-      const focusedBodyData = BODY_BY_NAME.get(focusedBody)
-      const orbitScale = focusedBodyData
-        ? focusedBodyData.renderRadius * settings.globalScale * ORBIT_SHIP_RADIUS_RATIO
-        : 0.0001
+      const orbitScale = FIXED_ORBIT_SHIP_SCALE * settings.globalScale
       ship.scale.setScalar(Math.max(0.0001, orbitScale))
     }
 
@@ -223,8 +279,14 @@ export default function TravelShip({ bodyRefs, focusedBody, simulationTimeRef, s
     if (rightTrailRef.current) rightTrailRef.current.scale.y = trailLength * (2 - pulse)
   })
 
+  const selectShip = (event) => {
+    event.stopPropagation()
+    if (!metrics.active) onSelect()
+  }
+
   return (
-    <group ref={shipRef} visible={false} renderOrder={8}>
+    <>
+    <group ref={shipRef} visible={false} renderOrder={8} onPointerDown={selectShip}>
       <group rotation={[MODEL_PITCH, 0, 0]}>
         <primitive object={shipModel} />
         <mesh ref={leftTrailRef} position={[-0.53, 0, 2.35]} rotation={[Math.PI / 2, 0, 0]}>
@@ -236,7 +298,39 @@ export default function TravelShip({ bodyRefs, focusedBody, simulationTimeRef, s
           <meshBasicMaterial color="#8edbff" transparent opacity={0.42} blending={THREE.AdditiveBlending} depthTest depthWrite={false} />
         </mesh>
       </group>
+      {settings.showLabels && !metrics.active && !shipFocused && (
+        <Html
+          center
+          position={[0, 0, 0]}
+          wrapperClass="planet-label-wrapper"
+          zIndexRange={[10, 0]}
+        >
+          <button
+            className={[
+              'planet-label',
+              'ship-label',
+              shipFocused && 'is-focused',
+            ].filter(Boolean).join(' ')}
+            type="button"
+            aria-current={shipFocused ? 'true' : undefined}
+            onPointerDown={selectShip}
+          >
+            <span aria-hidden="true">◇</span>{' '}
+            {getBodyLabel('Ship', language)}
+          </button>
+        </Html>
+      )}
     </group>
+      <line
+        ref={orbitTrailRef}
+        geometry={orbitTrailGeometry}
+        visible={settings.showOrbits && !metrics.active}
+        frustumCulled={false}
+        renderOrder={2}
+      >
+        <lineBasicMaterial vertexColors transparent opacity={0.78} depthTest depthWrite={false} />
+      </line>
+    </>
   )
 }
 

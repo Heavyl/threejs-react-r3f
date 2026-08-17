@@ -1,6 +1,16 @@
 import { TRANSLATIONS } from '../i18n/translations'
 
-function RangeControl({ id, label, value, min, max, step, digits = 1, suffix = '', formatValue, onChange }) {
+const MAX_TIME_SCALE = 86400
+
+function timeScaleToSliderValue(value) {
+  return Math.log(Math.max(1, value)) / Math.log(MAX_TIME_SCALE)
+}
+
+function sliderValueToTimeScale(value) {
+  return Math.round(Math.exp(Number(value) * Math.log(MAX_TIME_SCALE)))
+}
+
+function RangeControl({ id, label, value, inputValue = value, min, max, step, digits = 1, suffix = '', formatValue, parseValue = Number, onChange }) {
   return (
     <div className="control-row control-row--range">
       <label htmlFor={id}>{label}</label>
@@ -11,8 +21,8 @@ function RangeControl({ id, label, value, min, max, step, digits = 1, suffix = '
         min={min}
         max={max}
         step={step}
-        value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
+        value={inputValue}
+        onChange={(event) => onChange(parseValue(event.target.value))}
       />
     </div>
   )
@@ -33,7 +43,7 @@ function ToggleControl({ id, label, checked, onChange }) {
   )
 }
 
-export default function ControlPanel({ language, languageAction, onLanguageToggle, collapsed, onCollapsedChange, travelSpeedOpen, onTravelSpeedToggle, settings, onSettingChange, onReset, soundEnabled, onSoundToggle }) {
+export default function ControlPanel({ language, languageAction, onLanguageToggle, collapsed, onCollapsedChange, mapOpen, onMapToggle, travelSpeedOpen, onTravelSpeedToggle, settings, onSettingChange, onReset, soundEnabled, onSoundToggle }) {
   const text = TRANSLATIONS[language].panel
 
   return (
@@ -52,6 +62,16 @@ export default function ControlPanel({ language, languageAction, onLanguageToggl
             onClick={onLanguageToggle}
           >
             {language === 'en' ? 'FR' : 'EN'}
+          </button>
+          <button
+            className={`control-panel__map${mapOpen ? ' is-active' : ''}`}
+            type="button"
+            aria-expanded={mapOpen}
+            aria-label={language === 'fr' ? (mapOpen ? 'Fermer la mini-carte' : 'Ouvrir la mini-carte') : (mapOpen ? 'Close minimap' : 'Open minimap')}
+            title={language === 'fr' ? (mapOpen ? 'Fermer la mini-carte' : 'Ouvrir la mini-carte') : (mapOpen ? 'Close minimap' : 'Open minimap')}
+            onClick={onMapToggle}
+          >
+            <span aria-hidden="true">⌖</span>
           </button>
           <button
             className={`control-panel__travel${travelSpeedOpen ? ' is-active' : ''}`}
@@ -98,7 +118,18 @@ export default function ControlPanel({ language, languageAction, onLanguageToggl
         <div className="control-panel__content">
           <fieldset>
             <legend>{text.movement}</legend>
-            <RangeControl id="time-scale" label={text.simulationSpeed} value={settings.timeScale} min={0} max={86400} step={1} formatValue={text.timeScaleValue} onChange={(value) => onSettingChange('timeScale', value)} />
+            <RangeControl
+              id="time-scale"
+              label={text.simulationSpeed}
+              value={settings.timeScale}
+              inputValue={timeScaleToSliderValue(settings.timeScale)}
+              min={0}
+              max={1}
+              step={0.001}
+              formatValue={text.timeScaleValue}
+              parseValue={sliderValueToTimeScale}
+              onChange={(value) => onSettingChange('timeScale', value)}
+            />
           </fieldset>
 
           <fieldset>
