@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { BODY_BY_NAME, SCALE } from '../data/celestialBodies'
 import { createFadingOrbitTrailGeometry, updateFadingOrbitTrail } from '../utils/orbitTrail'
+import SpacecraftAnalysisHotspots from './SpacecraftAnalysisHotspots'
 
 const ISS_ALTITUDE_KM = 400
 const ISS_SPEED_KM_S = 7.66
@@ -65,6 +66,9 @@ function ISSModel() {
 }
 
 export default function InternationalSpaceStation({
+  analysisClosing,
+  analysisConfig,
+  analysisSectionId,
   bodyRefs,
   focused,
   mobilePerformance,
@@ -73,6 +77,8 @@ export default function InternationalSpaceStation({
   simulationTimeRef,
   stationRef,
   visible,
+  language,
+  onAnalysisSectionSelect,
 }) {
   const rootRef = useRef()
   const orbitTrailSegments = mobilePerformance ? 128 : 384
@@ -136,6 +142,13 @@ export default function InternationalSpaceStation({
       </line>
       <group ref={stationRef} onPointerDown={selectISS}>
         <ISSModel />
+        <SpacecraftAnalysisHotspots
+          closing={analysisClosing}
+          config={analysisConfig}
+          language={language}
+          onSelectSection={onAnalysisSectionSelect}
+          selectedSectionId={analysisSectionId}
+        />
         {settings.showLabels && !focused && (
           <Html center wrapperClass="planet-label-wrapper" zIndexRange={[10, 0]}>
             <button

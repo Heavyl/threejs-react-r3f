@@ -1,0 +1,27 @@
+{
+  "targetId": "Uranus",
+  "type": "layered-body",
+  "sonification": { "massEarths": 14.54, "densityKgM3": 1270, "rotationHours": -17.24, "cycleDays": 30688.5, "temperatureK": 78, "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranusfact.html" },
+  "defaultSectionId": "ice-mantle",
+  "title": { "en": "Inside Uranus", "fr": "À l’intérieur d’Uranus" },
+  "summary": { "en": "Uranus is an ice giant: most of its mass is a hot, dense fluid of water, methane, and ammonia above a small rocky core. The boundaries are schematic.", "fr": "Uranus est une géante de glaces : l’essentiel de sa masse est un fluide chaud et dense d’eau, de méthane et d’ammoniac au-dessus d’un petit noyau rocheux. Les limites sont schématiques." },
+  "sources": ["https://science.nasa.gov/uranus/facts/"],
+  "panelSections": [
+    { "id": "key-facts", "type": "facts", "title": { "en": "Key facts", "fr": "Caractéristiques générales" }, "items": [
+      { "id": "diameter", "label": { "en": "Equatorial diameter", "fr": "Diamètre équatorial" }, "value": { "en": "51,118 km", "fr": "51 118 km" } },
+      { "id": "mass", "label": { "en": "Mass", "fr": "Masse" }, "value": { "en": "8.681 × 10²⁵ kg", "fr": "8,681 × 10²⁵ kg" } },
+      { "id": "distance", "label": { "en": "Mean distance from Sun", "fr": "Distance moyenne au Soleil" }, "value": { "en": "2.9 billion km · 19.2 AU", "fr": "2,9 milliards de km · 19,2 UA" } },
+      { "id": "orbit", "label": { "en": "Orbital period", "fr": "Période orbitale" }, "value": { "en": "84 years", "fr": "84 ans" } },
+      { "id": "rotation", "label": { "en": "Rotation period", "fr": "Période de rotation" }, "value": { "en": "About 17 hours · retrograde", "fr": "Environ 17 heures · rétrograde" } },
+      { "id": "temperature", "label": { "en": "Minimum atmospheric temperature", "fr": "Température atmosphérique minimale" }, "value": { "en": "About −224 °C", "fr": "Environ −224 °C" } },
+      { "id": "tilt", "label": { "en": "Axial tilt", "fr": "Inclinaison de l’axe" }, "value": { "en": "97.8°", "fr": "97,8°" } },
+      { "id": "composition", "label": { "en": "Atmosphere", "fr": "Atmosphère" }, "value": { "en": "Hydrogen, helium, methane", "fr": "Hydrogène, hélium, méthane" } }
+    ] },
+    { "id": "internal-layers", "type": "layers", "title": { "en": "Internal regions", "fr": "Régions internes" } }
+  ],
+  "sections": [
+    { "id": "rocky-core", "innerRadiusRatio": 0, "outerRadiusRatio": 0.18, "color": "#927d75", "labelPosition": [0.17, -0.37, 0.025], "name": { "en": "Rocky core", "fr": "Noyau rocheux" }, "range": { "en": "Small, dense center", "fr": "Petit centre dense" }, "description": { "en": "A compact region probably made of silicate rock and heavier materials under extreme pressure.", "fr": "Une région compacte probablement composée de roches silicatées et de matériaux lourds soumis à une pression extrême." } },
+    { "id": "ice-mantle", "innerRadiusRatio": 0.18, "outerRadiusRatio": 0.8, "color": "#4da6b7", "labelPosition": [0.54, 0.0, 0.025], "name": { "en": "Icy fluid mantle", "fr": "Manteau fluide glacé" }, "range": { "en": "Water, methane, ammonia", "fr": "Eau, méthane, ammoniac" }, "description": { "en": "A hot, dense fluid often called “ice” because of its composition, not because it is frozen. Its unusual circulation may shape Uranus’s magnetic field.", "fr": "Un fluide chaud et dense qualifié de « glace » pour sa composition, et non parce qu’il est gelé. Sa circulation inhabituelle pourrait façonner le champ magnétique d’Uranus." } },
+    { "id": "atmosphere", "innerRadiusRatio": 0.8, "outerRadiusRatio": 1, "color": "#9bdee3", "labelPosition": [0.86, 0.52, 0.025], "name": { "en": "Atmosphere", "fr": "Atmosphère" }, "range": { "en": "Hydrogen, helium, methane", "fr": "Hydrogène, hélium, méthane" }, "description": { "en": "A deep gaseous envelope whose methane absorbs red light and gives Uranus its cyan color.", "fr": "Une profonde enveloppe gazeuse dont le méthane absorbe la lumière rouge et donne à Uranus sa couleur cyan." } }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "targetId": "Jupiter",
+  "type": "layered-body",
+  "sonification": { "massEarths": 317.83, "densityKgM3": 1326, "rotationHours": 9.925, "cycleDays": 4332.59, "temperatureK": 163, "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupiterfact.html" },
+  "defaultSectionId": "metallic-hydrogen",
+  "title": { "en": "Inside Jupiter", "fr": "À l’intérieur de Jupiter" },
+  "summary": {
+    "en": "Jupiter has no solid surface. Pressure gradually transforms its hydrogen envelope around a diffuse, heavy-element-rich core; the boundaries shown here are schematic.",
+    "fr": "Jupiter n’a pas de surface solide. La pression transforme progressivement son enveloppe d’hydrogène autour d’un noyau diffus riche en éléments lourds ; les limites montrées ici sont schématiques."
+  },
+  "sources": ["https://science.nasa.gov/jupiter/jupiter-facts/"],
+  "panelSections": [
+    {
+      "id": "key-facts", "type": "facts", "title": { "en": "Key facts", "fr": "Caractéristiques générales" },
+      "items": [
+        { "id": "diameter", "label": { "en": "Equatorial diameter", "fr": "Diamètre équatorial" }, "value": { "en": "142,984 km", "fr": "142 984 km" } },
+        { "id": "mass", "label": { "en": "Mass", "fr": "Masse" }, "value": { "en": "1.898 × 10²⁷ kg", "fr": "1,898 × 10²⁷ kg" } },
+        { "id": "distance", "label": { "en": "Mean distance from Sun", "fr": "Distance moyenne au Soleil" }, "value": { "en": "778 million km · 5.2 AU", "fr": "778 millions de km · 5,2 UA" } },
+        { "id": "orbit", "label": { "en": "Orbital period", "fr": "Période orbitale" }, "value": { "en": "11.86 years", "fr": "11,86 ans" } },
+        { "id": "rotation", "label": { "en": "Rotation period", "fr": "Période de rotation" }, "value": { "en": "About 9 h 56 min", "fr": "Environ 9 h 56 min" } },
+        { "id": "temperature", "label": { "en": "Mean cloud temperature", "fr": "Température moyenne des nuages" }, "value": { "en": "About −110 °C", "fr": "Environ −110 °C" } },
+        { "id": "gravity", "label": { "en": "Gravity at cloud tops", "fr": "Gravité au sommet des nuages" }, "value": { "en": "24.79 m/s²", "fr": "24,79 m/s²" } },
+        { "id": "composition", "label": { "en": "Main composition", "fr": "Composition principale" }, "value": { "en": "Hydrogen and helium", "fr": "Hydrogène et hélium" } }
+      ]
+    },
+    { "id": "internal-layers", "type": "layers", "title": { "en": "Internal regions", "fr": "Régions internes" } }
+  ],
+  "sections": [
+    { "id": "dilute-core", "innerRadiusRatio": 0, "outerRadiusRatio": 0.3, "color": "#d99862", "labelPosition": [0.2, -0.38, 0.025], "name": { "en": "Dilute core", "fr": "Noyau diffus" }, "range": { "en": "Schematic central region", "fr": "Région centrale schématique" }, "description": { "en": "A broad, poorly bounded region enriched in rock, metals, and hydrogen rather than a compact solid sphere.", "fr": "Une vaste région aux limites floues, enrichie en roches, métaux et hydrogène plutôt qu’une sphère solide compacte." } },
+    { "id": "metallic-hydrogen", "innerRadiusRatio": 0.3, "outerRadiusRatio": 0.75, "color": "#d97845", "labelPosition": [0.48, -0.08, 0.025], "name": { "en": "Metallic hydrogen", "fr": "Hydrogène métallique" }, "range": { "en": "Extreme-pressure fluid", "fr": "Fluide sous pression extrême" }, "description": { "en": "Immense pressure makes liquid hydrogen electrically conductive. Its circulation helps generate Jupiter’s powerful magnetic field.", "fr": "L’immense pression rend l’hydrogène liquide conducteur. Sa circulation contribue à générer le puissant champ magnétique de Jupiter." } },
+    { "id": "molecular-hydrogen", "innerRadiusRatio": 0.75, "outerRadiusRatio": 0.98, "color": "#e8b86a", "labelPosition": [0.72, 0.27, 0.025], "name": { "en": "Molecular hydrogen", "fr": "Hydrogène moléculaire" }, "range": { "en": "Deep gaseous envelope", "fr": "Enveloppe gazeuse profonde" }, "description": { "en": "Hydrogen and helium become progressively less dense toward the visible atmosphere, without a sharp surface.", "fr": "L’hydrogène et l’hélium deviennent progressivement moins denses vers l’atmosphère visible, sans surface nette." } },
+    { "id": "cloud-layers", "innerRadiusRatio": 0.98, "outerRadiusRatio": 1, "color": "#f5dfad", "labelPosition": [0.91, 0.61, 0.025], "name": { "en": "Cloud layers", "fr": "Couches nuageuses" }, "range": { "en": "Visible atmosphere", "fr": "Atmosphère visible" }, "description": { "en": "Bands of ammonia, ammonium hydrosulfide, and water clouds form Jupiter’s striped appearance and long-lived storms.", "fr": "Des bandes de nuages d’ammoniac, d’hydrosulfure d’ammonium et d’eau produisent l’aspect strié de Jupiter et ses tempêtes durables." } }
+  ]
+}

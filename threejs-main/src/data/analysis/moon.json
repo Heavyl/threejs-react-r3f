@@ -1,0 +1,133 @@
+{
+  "targetId": "Moon",
+  "type": "layered-body",
+  "sonification": { "massEarths": 0.0123, "densityKgM3": 3344, "rotationHours": 655.728, "cycleDays": 27.3217, "temperatureK": 250, "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html" },
+  "defaultSectionId": "mantle",
+  "title": { "en": "Inside the Moon", "fr": "À l’intérieur de la Lune" },
+  "summary": {
+    "en": "The Moon is a differentiated rocky world with an asymmetric crust, a thick silicate mantle, and a proportionally small iron-rich core.",
+    "fr": "La Lune est un monde rocheux différencié, doté d’une croûte asymétrique, d’un épais manteau silicaté et d’un noyau riche en fer proportionnellement petit."
+  },
+  "sources": [
+    "https://science.nasa.gov/moon/facts/",
+    "https://science.nasa.gov/moon/composition/"
+  ],
+  "panelSections": [
+    {
+      "id": "key-facts",
+      "type": "facts",
+      "title": { "en": "Key facts", "fr": "Caractéristiques générales" },
+      "items": [
+        {
+          "id": "diameter",
+          "label": { "en": "Mean diameter", "fr": "Diamètre moyen" },
+          "value": { "en": "3,474.8 km", "fr": "3 474,8 km" }
+        },
+        {
+          "id": "mass",
+          "label": { "en": "Mass", "fr": "Masse" },
+          "value": { "en": "7.342 × 10²² kg", "fr": "7,342 × 10²² kg" }
+        },
+        {
+          "id": "earth-distance",
+          "label": { "en": "Mean distance from Earth", "fr": "Distance moyenne à la Terre" },
+          "value": { "en": "384,400 km", "fr": "384 400 km" }
+        },
+        {
+          "id": "orbit-rotation",
+          "label": { "en": "Orbit and rotation", "fr": "Orbite et rotation" },
+          "value": { "en": "27.32 days · synchronous", "fr": "27,32 jours · synchrone" }
+        },
+        {
+          "id": "temperature",
+          "label": { "en": "Surface temperature", "fr": "Température en surface" },
+          "value": { "en": "−173 to 127 °C", "fr": "−173 à 127 °C" }
+        },
+        {
+          "id": "surface-gravity",
+          "label": { "en": "Surface gravity", "fr": "Gravité en surface" },
+          "value": { "en": "1.62 m/s² · 0.165 g", "fr": "1,62 m/s² · 0,165 g" }
+        },
+        {
+          "id": "axial-tilt",
+          "label": { "en": "Axial tilt", "fr": "Inclinaison de l’axe" },
+          "value": { "en": "6.68°", "fr": "6,68°" }
+        },
+        {
+          "id": "atmosphere",
+          "label": { "en": "Atmosphere", "fr": "Atmosphère" },
+          "value": { "en": "Extremely thin exosphere", "fr": "Exosphère extrêmement ténue" }
+        },
+        {
+          "id": "surface-area",
+          "label": { "en": "Surface area", "fr": "Superficie" },
+          "value": { "en": "37.9 million km²", "fr": "37,9 millions de km²" }
+        },
+        {
+          "id": "recession",
+          "label": { "en": "Recession from Earth", "fr": "Éloignement de la Terre" },
+          "value": { "en": "About 3.8 cm/year", "fr": "Environ 3,8 cm/an" }
+        }
+      ]
+    },
+    {
+      "id": "internal-layers",
+      "type": "layers",
+      "title": { "en": "Internal layers", "fr": "Couches internes" }
+    }
+  ],
+  "sections": [
+    {
+      "id": "crust",
+      "innerRadiusRatio": 0.971,
+      "outerRadiusRatio": 1,
+      "color": "#a9a69d",
+      "labelPosition": [0.86, 0.61, 0.025],
+      "name": { "en": "Crust", "fr": "Croûte" },
+      "range": { "en": "About 40–60 km thick", "fr": "Environ 40 à 60 km d’épaisseur" },
+      "description": {
+        "en": "A rigid silicate shell covered by regolith. It is asymmetric: the far-side crust is substantially thicker than the near-side crust.",
+        "fr": "Une enveloppe silicatée rigide recouverte de régolithe. Elle est asymétrique : la croûte de la face cachée est nettement plus épaisse que celle de la face visible."
+      }
+    },
+    {
+      "id": "mantle",
+      "innerRadiusRatio": 0.19,
+      "outerRadiusRatio": 0.971,
+      "color": "#77765a",
+      "labelPosition": [0.64, 0.2, 0.025],
+      "name": { "en": "Mantle", "fr": "Manteau" },
+      "range": { "en": "Mostly solid silicate rock", "fr": "Roche silicatée principalement solide" },
+      "description": {
+        "en": "The Moon’s thickest layer, made mainly of olivine- and pyroxene-rich rock. A zone near the core is thought to remain partly molten.",
+        "fr": "La couche la plus épaisse de la Lune, composée surtout de roches riches en olivine et en pyroxène. Une zone proche du noyau serait encore partiellement fondue."
+      }
+    },
+    {
+      "id": "outer-core",
+      "innerRadiusRatio": 0.138,
+      "outerRadiusRatio": 0.19,
+      "color": "#d88b45",
+      "labelPosition": [0.31, -0.1, 0.025],
+      "name": { "en": "Liquid outer core", "fr": "Noyau externe liquide" },
+      "range": { "en": "About 90 km thick", "fr": "Environ 90 km d’épaisseur" },
+      "description": {
+        "en": "A molten iron-rich shell containing nickel and sulfur. It surrounds the Moon’s small solid inner core.",
+        "fr": "Une enveloppe fondue riche en fer, contenant du nickel et du soufre. Elle entoure le petit noyau interne solide de la Lune."
+      }
+    },
+    {
+      "id": "inner-core",
+      "innerRadiusRatio": 0,
+      "outerRadiusRatio": 0.138,
+      "color": "#f2c67d",
+      "labelPosition": [0.14, -0.35, 0.025],
+      "name": { "en": "Solid inner core", "fr": "Noyau interne solide" },
+      "range": { "en": "About 240 km radius", "fr": "Environ 240 km de rayon" },
+      "description": {
+        "en": "A small solid sphere composed mostly of iron, with lesser amounts of nickel and sulfur.",
+        "fr": "Une petite sphère solide composée principalement de fer, avec de plus faibles quantités de nickel et de soufre."
+      }
+    }
+  ]
+}

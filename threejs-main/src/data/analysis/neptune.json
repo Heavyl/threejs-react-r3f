@@ -1,0 +1,27 @@
+{
+  "targetId": "Neptune",
+  "type": "layered-body",
+  "sonification": { "massEarths": 17.15, "densityKgM3": 1638, "rotationHours": 16.11, "cycleDays": 60182, "temperatureK": 73, "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptunefact.html" },
+  "defaultSectionId": "ice-mantle",
+  "title": { "en": "Inside Neptune", "fr": "À l’intérieur de Neptune" },
+  "summary": { "en": "Neptune is an ice giant with a hot, dense mantle rich in water, methane, and ammonia around a rocky core. The boundaries shown are schematic.", "fr": "Neptune est une géante de glaces dotée d’un manteau chaud et dense riche en eau, méthane et ammoniac autour d’un noyau rocheux. Les limites montrées sont schématiques." },
+  "sources": ["https://science.nasa.gov/neptune/neptune-facts/"],
+  "panelSections": [
+    { "id": "key-facts", "type": "facts", "title": { "en": "Key facts", "fr": "Caractéristiques générales" }, "items": [
+      { "id": "diameter", "label": { "en": "Equatorial diameter", "fr": "Diamètre équatorial" }, "value": { "en": "49,528 km", "fr": "49 528 km" } },
+      { "id": "mass", "label": { "en": "Mass", "fr": "Masse" }, "value": { "en": "1.024 × 10²⁶ kg", "fr": "1,024 × 10²⁶ kg" } },
+      { "id": "distance", "label": { "en": "Mean distance from Sun", "fr": "Distance moyenne au Soleil" }, "value": { "en": "4.5 billion km · 30 AU", "fr": "4,5 milliards de km · 30 UA" } },
+      { "id": "orbit", "label": { "en": "Orbital period", "fr": "Période orbitale" }, "value": { "en": "164.8 years", "fr": "164,8 ans" } },
+      { "id": "rotation", "label": { "en": "Rotation period", "fr": "Période de rotation" }, "value": { "en": "About 16 hours", "fr": "Environ 16 heures" } },
+      { "id": "temperature", "label": { "en": "Mean cloud temperature", "fr": "Température moyenne des nuages" }, "value": { "en": "About −214 °C", "fr": "Environ −214 °C" } },
+      { "id": "gravity", "label": { "en": "Gravity at cloud tops", "fr": "Gravité au sommet des nuages" }, "value": { "en": "11.15 m/s²", "fr": "11,15 m/s²" } },
+      { "id": "winds", "label": { "en": "Fastest winds", "fr": "Vents les plus rapides" }, "value": { "en": "Over 2,000 km/h", "fr": "Plus de 2 000 km/h" } }
+    ] },
+    { "id": "internal-layers", "type": "layers", "title": { "en": "Internal regions", "fr": "Régions internes" } }
+  ],
+  "sections": [
+    { "id": "rocky-core", "innerRadiusRatio": 0, "outerRadiusRatio": 0.2, "color": "#796f71", "labelPosition": [0.18, -0.37, 0.025], "name": { "en": "Rocky core", "fr": "Noyau rocheux" }, "range": { "en": "Dense central region", "fr": "Région centrale dense" }, "description": { "en": "A compact core likely made of rock, silicates, and heavier elements under enormous pressure.", "fr": "Un noyau compact probablement constitué de roches, de silicates et d’éléments lourds sous une pression énorme." } },
+    { "id": "ice-mantle", "innerRadiusRatio": 0.2, "outerRadiusRatio": 0.8, "color": "#356fa5", "labelPosition": [0.54, 0.0, 0.025], "name": { "en": "Icy fluid mantle", "fr": "Manteau fluide glacé" }, "range": { "en": "Water, methane, ammonia", "fr": "Eau, méthane, ammoniac" }, "description": { "en": "A hot, dense, electrically conductive mixture. It may include exotic high-pressure phases and helps generate Neptune’s magnetic field.", "fr": "Un mélange chaud, dense et conducteur. Il pourrait comporter des phases exotiques à haute pression et contribue à générer le champ magnétique de Neptune." } },
+    { "id": "atmosphere", "innerRadiusRatio": 0.8, "outerRadiusRatio": 1, "color": "#589bd4", "labelPosition": [0.86, 0.52, 0.025], "name": { "en": "Atmosphere", "fr": "Atmosphère" }, "range": { "en": "Hydrogen, helium, methane", "fr": "Hydrogène, hélium, méthane" }, "description": { "en": "A turbulent gaseous envelope with methane clouds, dark storms, and the fastest planetary winds in the Solar System.", "fr": "Une enveloppe gazeuse turbulente avec des nuages de méthane, des tempêtes sombres et les vents planétaires les plus rapides du Système solaire." } }
+  ]
+}

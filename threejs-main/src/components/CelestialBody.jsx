@@ -4,7 +4,8 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { getTravelMetricsSnapshot } from '../data/travelMetricsStore'
 import { getBodyLabel } from '../i18n/translations'
-import { createOrbitGeometry, setOrbitalPosition } from '../utils/orbit'
+import { createOrbitGeometry, setOrbitalPosition, updateOrbitTrailGeometry } from '../utils/orbit'
+import PlanetAnalysisView from './PlanetAnalysisView'
 import SolarAtmosphere from './SolarAtmosphere'
 
 const MARTIAN_MOON_MODELS = Object.freeze({
@@ -12,15 +13,51 @@ const MARTIAN_MOON_MODELS = Object.freeze({
   Deimos: `${import.meta.env.BASE_URL}models/deimos.glb`,
 })
 
-function IrregularMoon({ body, texture, onPointerDown }) {
-  const { scene } = useGLTF(MARTIAN_MOON_MODELS[body.name])
-  const geometry = useMemo(() => {
+const ORBIT_TRAIL_VERTEX_SHADER = /* glsl */ `
+  attribute float trailAlpha;
+  varying float vTrailAlpha;
+
+  #include <common>
+  #include <logdepthbuf_pars_vertex>
+
+  void main() {
+    vTrailAlpha = trailAlpha;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    #include <logdepthbuf_vertex>
+  }
+`
+
+const ORBIT_TRAIL_FRAGMENT_SHADER = /* glsl */ `
+  uniform vec3 uColor;
+  uniform float uOpacity;
+  varying float vTrailAlpha;
+
+  #include <common>
+  #include <logdepthbuf_pars_fragment>
+
+  void main() {
+    #include <logdepthbuf_fragment>
+    float alpha = uOpacity * vTrailAlpha;
+    if (alpha <= 0.002) discard;
+    gl_FragColor = vec4(uColor, alpha);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }
+`
+
+function useIrregularMoonGeometry(bodyName) {
+  const { scene } = useGLTF(MARTIAN_MOON_MODELS[bodyName])
+  return useMemo(() => {
     let moonGeometry
     scene.traverse((object) => {
       if (!moonGeometry && object.isMesh) moonGeometry = object.geometry
     })
     return moonGeometry
   }, [scene])
+}
+
+function IrregularMoon({ body, texture, onPointerDown }) {
+  const geometry = useIrregularMoonGeometry(body.name)
 
   return (
     <mesh
@@ -32,6 +69,35 @@ function IrregularMoon({ body, texture, onPointerDown }) {
     >
       <meshStandardMaterial map={texture} color="#ffffff" roughness={0.96} metalness={0} />
     </mesh>
+  )
+}
+
+function IrregularMoonAnalysis({
+  body,
+  config,
+  language,
+  onCloseComplete,
+  onSelectSection,
+  selectedSectionId,
+  surfaceSegments,
+  texture,
+  closing,
+}) {
+  const geometry = useIrregularMoonGeometry(body.name)
+
+  return (
+    <PlanetAnalysisView
+      closing={closing}
+      config={config}
+      language={language}
+      onCloseComplete={onCloseComplete}
+      onSelectSection={onSelectSection}
+      radius={body.renderRadius}
+      selectedSectionId={selectedSectionId}
+      surfaceGeometry={geometry}
+      surfaceSegments={surfaceSegments}
+      texture={texture}
+    />
   )
 }
 
@@ -77,22 +143,36 @@ function SaturnRings({ texture, radius, segments }) {
   )
 }
 
-export function OrbitPath({ body, bodyRefs, settings, mobilePerformance }) {
+export function OrbitPath({
+  analysisHidden,
+  body,
+  bodyRefs,
+  settings,
+  mobilePerformance,
+  simulationTimeRef,
+}) {
   const orbitRef = useRef()
   const materialRef = useRef()
   const orbitSegments = mobilePerformance ? 512 : 2048
   const geometry = useMemo(() => createOrbitGeometry(body, orbitSegments), [body, orbitSegments])
+  const materialUniforms = useMemo(() => ({
+    uColor: { value: new THREE.Color(body.orbitColor) },
+    uOpacity: { value: settings.orbitOpacity },
+  }), [body.orbitColor])
 
   useFrame((_, delta) => {
     const parent = body.parent ? bodyRefs.current[body.parent] : null
     if (parent) orbitRef.current.position.copy(parent.position)
+    updateOrbitTrailGeometry(geometry, body, simulationTimeRef.current)
 
     const { visualIntensity } = getTravelMetricsSnapshot()
-    const targetOpacity = settings.orbitOpacity * (1 - visualIntensity)
-    materialRef.current.opacity = THREE.MathUtils.damp(
-      materialRef.current.opacity,
+    const targetOpacity = settings.orbitOpacity
+      * (1 - visualIntensity)
+      * (analysisHidden ? 0 : 1)
+    materialRef.current.uniforms.uOpacity.value = THREE.MathUtils.damp(
+      materialRef.current.uniforms.uOpacity.value,
       targetOpacity,
-      10,
+      analysisHidden ? 4.2 : 3.2,
       delta,
     )
   })
@@ -105,8 +185,18 @@ export function OrbitPath({ body, bodyRefs, settings, mobilePerformance }) {
       geometry={geometry}
       visible={settings.showOrbits}
       rotation={[0, 0, THREE.MathUtils.degToRad(body.planeTilt || 0)]}
+      frustumCulled={false}
     >
-      <lineBasicMaterial ref={materialRef} color={body.orbitColor} transparent opacity={settings.orbitOpacity} />
+      <shaderMaterial
+        ref={materialRef}
+        transparent
+        depthTest
+        depthWrite={false}
+        toneMapped={false}
+        uniforms={materialUniforms}
+        vertexShader={ORBIT_TRAIL_VERTEX_SHADER}
+        fragmentShader={ORBIT_TRAIL_FRAGMENT_SHADER}
+      />
     </line>
   )
 }
@@ -121,14 +211,21 @@ export function CelestialBody({
   isSelected,
   isFocused,
   isParentFocused,
+  visible = true,
   interactionDisabled,
   language,
+  analysisConfig,
+  analysisClosing,
+  selectedAnalysisSectionId,
+  onAnalysisSectionSelect,
+  onAnalysisCloseComplete,
   onSelect,
   onLabelSelect,
 }) {
   const bodyRef = useRef()
   const spinRef = useRef()
   const orbitalPosition = useMemo(() => new THREE.Vector3(), [])
+  const analysisActive = Boolean(analysisConfig)
 
   useLayoutEffect(() => {
     bodyRefs.current[body.name] = bodyRef.current
@@ -142,7 +239,7 @@ export function CelestialBody({
     setOrbitalPosition(orbitalPosition, body, simulationTimeRef.current, parent?.position)
     bodyRef.current.position.copy(orbitalPosition)
 
-    if (body.rotationAngularSpeed) {
+    if (body.rotationAngularSpeed && spinRef.current && !analysisActive) {
       spinRef.current.rotation.y = simulationTimeRef.current * body.rotationAngularSpeed
     }
   })
@@ -163,39 +260,70 @@ export function CelestialBody({
   const labelHeight = body.renderRadius + Math.max(0.15, body.renderRadius * 0.13)
 
   return (
-    <group ref={bodyRef}>
+    <group ref={bodyRef} visible={visible}>
       <group
         rotation={[0, 0, THREE.MathUtils.degToRad(body.axialTilt || 0)]}
       >
         <group ref={spinRef}>
-          {MARTIAN_MOON_MODELS[body.name] ? (
-            <IrregularMoon body={body} texture={textures[body.texture]} onPointerDown={selectBody} />
+          {analysisActive ? (
+            MARTIAN_MOON_MODELS[body.name] ? (
+              <IrregularMoonAnalysis
+                body={body}
+                closing={analysisClosing}
+                config={analysisConfig}
+                language={language}
+                onCloseComplete={onAnalysisCloseComplete}
+                onSelectSection={onAnalysisSectionSelect}
+                selectedSectionId={selectedAnalysisSectionId}
+                surfaceSegments={surfaceSegments}
+                texture={textures[body.texture]}
+              />
+            ) : (
+              <PlanetAnalysisView
+                config={analysisConfig}
+                closing={analysisClosing}
+                language={language}
+                normalMap={body.name === 'Earth' ? textures.earthNormal : undefined}
+                onSelectSection={onAnalysisSectionSelect}
+                onCloseComplete={onAnalysisCloseComplete}
+                radius={body.renderRadius}
+                selectedSectionId={selectedAnalysisSectionId}
+                surfaceSegments={surfaceSegments}
+                texture={textures[body.texture]}
+              />
+            )
           ) : (
-            <mesh onPointerDown={selectBody}>
-              <sphereGeometry args={[body.renderRadius, surfaceSegments, surfaceSegments]} />
-              {body.emissive ? (
-                <meshBasicMaterial map={textures[body.texture]} />
-              ) : (
-                <meshStandardMaterial
-                  map={textures[body.texture]}
-                  normalMap={body.name === 'Earth' ? textures.earthNormal : undefined}
-                  color={body.texture ? '#ffffff' : '#b8b8b8'}
-                  roughness={0.82}
-                  metalness={0}
-                />
-              )}
-            </mesh>
-          )}
-          {settings.showAtmospheres && body.atmosphere && (
-            <Atmosphere type={body.atmosphere} textures={textures} radius={body.renderRadius} segments={atmosphereSegments} />
-          )}
-          {settings.showRings && body.rings && (
-            <SaturnRings texture={textures.saturnRings} radius={body.renderRadius} segments={ringSegments} />
+            <>
+            {MARTIAN_MOON_MODELS[body.name] ? (
+              <IrregularMoon body={body} texture={textures[body.texture]} onPointerDown={selectBody} />
+            ) : (
+              <mesh onPointerDown={selectBody}>
+                <sphereGeometry args={[body.renderRadius, surfaceSegments, surfaceSegments]} />
+                {body.emissive ? (
+                  <meshBasicMaterial map={textures[body.texture]} />
+                ) : (
+                  <meshStandardMaterial
+                    map={textures[body.texture]}
+                    normalMap={body.name === 'Earth' ? textures.earthNormal : undefined}
+                    color={body.texture ? '#ffffff' : '#b8b8b8'}
+                    roughness={0.82}
+                    metalness={0}
+                  />
+                )}
+              </mesh>
+            )}
+            {settings.showAtmospheres && body.atmosphere && (
+              <Atmosphere type={body.atmosphere} textures={textures} radius={body.renderRadius} segments={atmosphereSegments} />
+            )}
+            {settings.showRings && body.rings && (
+              <SaturnRings texture={textures.saturnRings} radius={body.renderRadius} segments={ringSegments} />
+            )}
+            </>
           )}
         </group>
       </group>
 
-      {body.emissive && settings.showAtmospheres && (
+      {!analysisActive && body.emissive && settings.showAtmospheres && (
         <SolarAtmosphere
           radius={body.renderRadius}
           texture={textures[body.texture]}
@@ -204,7 +332,7 @@ export function CelestialBody({
         />
       )}
 
-      {settings.showLabels && isParentFocused && (
+      {visible && !analysisActive && settings.showLabels && isParentFocused && (
         <Html
           center
           position={[0, labelHeight, 0]}
@@ -233,5 +361,3 @@ export function CelestialBody({
 
 useGLTF.preload(MARTIAN_MOON_MODELS.Phobos)
 useGLTF.preload(MARTIAN_MOON_MODELS.Deimos)
-
-

@@ -80,11 +80,48 @@ function setApproachPosition(result, bodyPosition, originPosition, body, globalS
     .add(bodyPosition)
 }
 
+function setCubicBezierPoint(result, start, startControl, endControl, end, progress) {
+  const inverseProgress = 1 - progress
+  const startWeight = inverseProgress ** 3
+  const startControlWeight = 3 * inverseProgress ** 2 * progress
+  const endControlWeight = 3 * inverseProgress * progress ** 2
+  const endWeight = progress ** 3
+
+  return result
+    .copy(start)
+    .multiplyScalar(startWeight)
+    .addScaledVector(startControl, startControlWeight)
+    .addScaledVector(endControl, endControlWeight)
+    .addScaledVector(end, endWeight)
+}
+
+function getCubicBezierLength(start, startControl, endControl, end) {
+  const previousPoint = start.clone()
+  const sampledPoint = new THREE.Vector3()
+  let length = 0
+
+  for (let index = 1; index <= 64; index += 1) {
+    setCubicBezierPoint(
+      sampledPoint,
+      start,
+      startControl,
+      endControl,
+      end,
+      index / 64,
+    )
+    length += previousPoint.distanceTo(sampledPoint)
+    previousPoint.copy(sampledPoint)
+  }
+
+  return length
+}
+
 
 function advanceTravelMotion(transition, delta, settings) {
   const activeDelta = settings.timeScale > 0 ? delta : 0
   const travelSpeedKmS = getTravelSpeedKmS(settings)
   transition.cinematicElapsed += activeDelta
+  transition.targetingElapsed += activeDelta
   transition.remainingDistanceKm = Math.max(
     0,
     transition.remainingDistanceKm - activeDelta * travelSpeedKmS,
@@ -104,7 +141,7 @@ function advanceTravelMotion(transition, delta, settings) {
   const remainingRealSeconds = remainingDurationSeconds
   const targetingProgress = 1 - (
     1 - THREE.MathUtils.clamp(
-      transition.cinematicElapsed / TARGETING_DURATION,
+      transition.targetingElapsed / TARGETING_DURATION,
       0,
       1,
     )
@@ -120,10 +157,18 @@ function advanceTravelMotion(transition, delta, settings) {
     1,
   ))
 
+  const targetVisualIntensity = Math.min(accelerationIntensity, decelerationIntensity)
+  transition.visualIntensity = THREE.MathUtils.damp(
+    transition.visualIntensity,
+    targetVisualIntensity,
+    5,
+    activeDelta,
+  )
+
   return {
     progress,
     targetingProgress,
-    visualIntensity: Math.min(accelerationIntensity, decelerationIntensity),
+    visualIntensity: transition.visualIntensity,
     arrivalProgress: 1 - decelerationIntensity,
     remainingDurationSeconds,
     travelSpeedKmS,
@@ -192,6 +237,9 @@ export default function CameraRig({
   const travelRouteDirection = useMemo(() => new THREE.Vector3(), [])
   const travelRouteRotation = useMemo(() => new THREE.Quaternion(), [])
   const travelRouteStep = useMemo(() => new THREE.Quaternion(), [])
+  const travelRoutePreviousPosition = useMemo(() => new THREE.Vector3(), [])
+  const travelRouteVelocity = useMemo(() => new THREE.Vector3(), [])
+  const travelCurveEndControl = useMemo(() => new THREE.Vector3(), [])
   const travelling = useRef(false)
 
   const setTravelling = (value) => {
@@ -661,18 +709,45 @@ export default function CameraRig({
     }
 
     if (previousFocus.current !== focusedBody) {
-      const departureId = previousFocus.current
       const previousTransition = transition.current
+      const isRetargeting = Boolean(previousTransition && travelling.current)
+      const departureId = previousTransition?.departureId ?? previousFocus.current
       previousFocus.current = focusedBody
       const ship = shipRef.current
-      if (ship) ship.getWorldPosition(shipPosition)
+      if (isRetargeting && travelPositionRef.current) {
+        shipPosition.copy(travelPositionRef.current)
+      } else if (ship) ship.getWorldPosition(shipPosition)
       else shipPosition.copy(controls.target)
       setApproachPosition(
         destination, targetPosition, shipPosition, body, settings.globalScale,
       )
       const travelDistance = shipPosition.distanceTo(destination)
-      const totalDistanceKm = worldUnitsToKilometers(travelDistance, settings.globalScale)
-      const initialDurationSeconds = calculateTravelDuration(totalDistanceKm, settings)
+      travelRouteDirection.copy(destination).sub(shipPosition)
+      if (
+        isRetargeting
+        && previousTransition.velocityDirection?.lengthSq() > 0.000000000001
+      ) {
+        travelRouteDirection.copy(previousTransition.velocityDirection)
+      }
+      if (travelRouteDirection.lengthSq() < 0.000000000001) {
+        travelRouteDirection.set(1, 0, 0)
+      }
+      travelRouteDirection.normalize()
+      travelRouteEndDirection.copy(targetPosition).sub(destination)
+      if (travelRouteEndDirection.lengthSq() < 0.000000000001) {
+        travelRouteEndDirection.copy(travelRouteDirection)
+      } else {
+        travelRouteEndDirection.normalize()
+      }
+      const curveHandleLength = travelDistance * 0.3
+      const curveStartControl = shipPosition.clone().addScaledVector(
+        travelRouteDirection,
+        curveHandleLength,
+      )
+      const curveEndControl = destination.clone().addScaledVector(
+        travelRouteEndDirection,
+        -curveHandleLength,
+      )
       let parentRoute = null
       if (MARTIAN_MOON_TARGETS.has(body.name) && body.parent) {
         const parentObject = bodyRefs.current[body.parent]
@@ -688,15 +763,32 @@ export default function CameraRig({
           }
         }
       }
+      const routeDistance = isRetargeting && !parentRoute
+        ? getCubicBezierLength(
+            shipPosition,
+            curveStartControl,
+            curveEndControl,
+            destination,
+          )
+        : travelDistance
+      const totalDistanceKm = worldUnitsToKilometers(routeDistance, settings.globalScale)
+      const initialDurationSeconds = calculateTravelDuration(totalDistanceKm, settings)
       if (!travelPositionRef.current) travelPositionRef.current = new THREE.Vector3()
       travelPositionRef.current.copy(shipPosition)
       transition.current = {
         departureId,
-        cinematicElapsed: 0,
+        cinematicElapsed: previousTransition?.cinematicElapsed ?? 0,
+        targetingElapsed: 0,
+        visualIntensity: previousTransition?.visualIntensity ?? 0,
         remainingDistanceKm: totalDistanceKm,
         lastRemainingRealSeconds: initialDurationSeconds,
         progress: 0,
         startPosition: shipPosition.clone(),
+        startControl: curveStartControl,
+        arrivalDirection: travelRouteEndDirection.clone(),
+        curveHandleLength,
+        smoothRoute: isRetargeting,
+        velocityDirection: travelRouteDirection.clone(),
         direction: destination.clone().sub(targetPosition).normalize(),
         approachDistance: getApproachDistance(body, settings.globalScale),
         totalDistanceKm,
@@ -704,10 +796,9 @@ export default function CameraRig({
         startCameraPosition: camera.position.clone(),
         startControlsTarget: controls.target.clone(),
         cameraViewOffset: camera.position.clone().sub(controls.target).normalize(),
-        startCameraDistance: Math.max(
-          camera.position.distanceTo(controls.target),
-          cameraDistance,
-        ),
+        startCameraDistance: isRetargeting
+          ? camera.position.distanceTo(controls.target)
+          : Math.max(camera.position.distanceTo(controls.target), cameraDistance),
         parentRoute,
       }
       metricsElapsed.current = 0
@@ -722,7 +813,7 @@ export default function CameraRig({
         remainingDistanceKm: totalDistanceKm,
         remainingDurationSeconds: initialDurationSeconds,
         travelSpeedKmS: getTravelSpeedKmS(settings),
-        visualIntensity: 0,
+        visualIntensity: transition.current.visualIntensity,
         progress: 0,
       })
       controls.enabled = false
@@ -736,6 +827,7 @@ export default function CameraRig({
       const motion = advanceTravelMotion(transition.current, delta, settings)
       transition.current.progress = motion.progress
       const visualIntensity = motion.visualIntensity
+      travelRoutePreviousPosition.copy(travelPositionRef.current)
 
       destination.copy(transition.current.direction)
         .multiplyScalar(transition.current.approachDistance)
@@ -775,12 +867,33 @@ export default function CameraRig({
         } else {
           travelPositionRef.current.copy(destination)
         }
+      } else if (transition.current.smoothRoute) {
+        travelCurveEndControl
+          .copy(destination)
+          .addScaledVector(
+            transition.current.arrivalDirection,
+            -transition.current.curveHandleLength,
+          )
+        setCubicBezierPoint(
+          travelPositionRef.current,
+          transition.current.startPosition,
+          transition.current.startControl,
+          travelCurveEndControl,
+          destination,
+          motion.progress,
+        )
       } else {
         travelPositionRef.current.lerpVectors(
           transition.current.startPosition,
           destination,
           motion.progress,
         )
+      }
+      travelRouteVelocity
+        .copy(travelPositionRef.current)
+        .sub(travelRoutePreviousPosition)
+      if (travelRouteVelocity.lengthSq() > 0.000000000001) {
+        transition.current.velocityDirection.copy(travelRouteVelocity).normalize()
       }
       const ship = shipRef.current
       if (ship) {

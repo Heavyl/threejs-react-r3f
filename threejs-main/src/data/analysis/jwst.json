@@ -1,0 +1,26 @@
+{
+  "targetId": "JWST",
+  "type": "information",
+  "defaultSectionId": "optics",
+  "title": { "en": "James Webb Space Telescope", "fr": "Télescope spatial James-Webb" },
+  "summary": { "en": "A large cryogenic infrared observatory operating near the Sun–Earth L2 point, protected from sunlight by a five-layer sunshield.", "fr": "Un grand observatoire infrarouge cryogénique opérant près du point Soleil–Terre L2, protégé du rayonnement solaire par un pare-soleil à cinq couches." },
+  "sources": ["https://science.nasa.gov/mission/webb/fact-sheet/"],
+  "panelSections": [
+    { "id": "key-facts", "type": "facts", "title": { "en": "Key facts", "fr": "Caractéristiques générales" }, "items": [
+      { "id": "launch", "label": { "en": "Launch", "fr": "Lancement" }, "value": { "en": "25 December 2021", "fr": "25 décembre 2021" } },
+      { "id": "mass", "label": { "en": "Mass", "fr": "Masse" }, "value": { "en": "About 6,200 kg", "fr": "Environ 6 200 kg" } },
+      { "id": "mirror", "label": { "en": "Primary mirror", "fr": "Miroir primaire" }, "value": { "en": "6.5 m · 18 segments", "fr": "6,5 m · 18 segments" } },
+      { "id": "sunshield", "label": { "en": "Sunshield", "fr": "Pare-soleil" }, "value": { "en": "21.2 × 14.2 m · 5 layers", "fr": "21,2 × 14,2 m · 5 couches" } },
+      { "id": "location", "label": { "en": "Operating location", "fr": "Lieu d’opération" }, "value": { "en": "Sun–Earth L2 · 1.5 million km away", "fr": "Point Soleil–Terre L2 · à 1,5 million de km" } },
+      { "id": "wavelength", "label": { "en": "Wavelength range", "fr": "Domaine spectral" }, "value": { "en": "0.6–28.5 μm", "fr": "0,6 à 28,5 μm" } },
+      { "id": "temperature", "label": { "en": "Cold-side temperature", "fr": "Température côté froid" }, "value": { "en": "Below 50 K", "fr": "Inférieure à 50 K" } }
+    ] },
+    { "id": "technical-details", "type": "details", "title": { "en": "Observatory systems", "fr": "Systèmes de l’observatoire" } }
+  ],
+  "sections": [
+    { "id": "optics", "hotspotPosition": [0, 0, 0.00000036], "color": "#f2c36b", "name": { "en": "Primary mirror", "fr": "Miroir primaire" }, "range": { "en": "18 gold-coated beryllium segments", "fr": "18 segments en béryllium doré" }, "description": { "en": "Individual actuators align the 18 hexagonal segments into one 6.5 m optical surface. Their gold coating efficiently reflects infrared light toward the secondary mirror.", "fr": "Des actionneurs individuels alignent les 18 segments hexagonaux en une surface optique de 6,5 m. Leur revêtement d’or réfléchit efficacement l’infrarouge vers le miroir secondaire." } },
+    { "id": "sunshield", "hotspotPosition": [0, -0.0000005, 0], "color": "#d7b9ff", "name": { "en": "Five-layer sunshield", "fr": "Pare-soleil à cinq couches" }, "range": { "en": "21.2 × 14.2 m thermal barrier", "fr": "Barrière thermique de 21,2 × 14,2 m" }, "description": { "en": "Five separated Kapton membranes block and radiate heat from the Sun, Earth, Moon, and warm spacecraft bus, keeping the telescope’s cold side below 50 K.", "fr": "Cinq membranes de Kapton séparées bloquent et rayonnent la chaleur du Soleil, de la Terre, de la Lune et de la plateforme chaude, maintenant le côté froid du télescope sous 50 K." } },
+    { "id": "instruments", "hotspotPosition": [0, 0.0000002, 0.00000018], "color": "#74cfff", "name": { "en": "Instrument module", "fr": "Module des instruments" }, "range": { "en": "NIRCam · NIRSpec · MIRI · FGS/NIRISS", "fr": "NIRCam · NIRSpec · MIRI · FGS/NIRISS" }, "description": { "en": "Behind the primary mirror, the integrated science instrument module contains Webb’s cameras, spectrographs, guidance sensor, and cryogenic mid-infrared instrument.", "fr": "Derrière le miroir primaire, le module scientifique intégré contient les caméras, spectrographes, capteur de guidage et instrument infrarouge moyen cryogénique de Webb." } },
+    { "id": "spacecraft-bus", "hotspotPosition": [0, 0, -0.00000008], "color": "#6e8fff", "name": { "en": "Spacecraft bus", "fr": "Plateforme de service" }, "range": { "en": "Power, communication, propulsion, and control", "fr": "Énergie, communications, propulsion et contrôle" }, "description": { "en": "The warm-side bus houses computers, power conditioning, communications, propulsion, and attitude-control equipment. It also supports Webb’s solar panel and high-gain antenna.", "fr": "La plateforme du côté chaud accueille ordinateurs, gestion électrique, communications, propulsion et contrôle d’attitude. Elle supporte également le panneau solaire et l’antenne à grand gain de Webb." } }
+  ]
+}

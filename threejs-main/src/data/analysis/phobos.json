@@ -1,0 +1,108 @@
+{
+  "targetId": "Phobos",
+  "type": "layered-body",
+  "sonification": { "massEarths": 0.00000000178, "densityKgM3": 1876, "rotationHours": 7.6538, "cycleDays": 0.3189, "temperatureK": 233, "source": "https://science.nasa.gov/mars/moons/phobos/" },
+  "defaultSectionId": "porous-interior",
+  "cutawayRadiusRatio": 0.8,
+  "title": { "en": "Inside Phobos", "fr": "À l’intérieur de Phobos" },
+  "summary": {
+    "en": "Phobos is a dark, highly porous moon. Its deep structure remains uncertain; this cutaway is a schematic interpretation of current observations.",
+    "fr": "Phobos est une lune sombre et très poreuse. Sa structure profonde demeure incertaine ; cette coupe est une interprétation schématique des observations actuelles."
+  },
+  "sources": [
+    "https://science.nasa.gov/mars/moons/phobos/",
+    "https://science.nasa.gov/mars/moons/facts/"
+  ],
+  "panelSections": [
+    {
+      "id": "key-facts",
+      "type": "facts",
+      "title": { "en": "Key facts", "fr": "Caractéristiques générales" },
+      "items": [
+        {
+          "id": "dimensions",
+          "label": { "en": "Dimensions", "fr": "Dimensions" },
+          "value": { "en": "27 × 22 × 18 km", "fr": "27 × 22 × 18 km" }
+        },
+        {
+          "id": "mass",
+          "label": { "en": "Mass", "fr": "Masse" },
+          "value": { "en": "About 1.07 × 10¹⁶ kg", "fr": "Environ 1,07 × 10¹⁶ kg" }
+        },
+        {
+          "id": "mars-distance",
+          "label": { "en": "Distance from Mars’ center", "fr": "Distance au centre de Mars" },
+          "value": { "en": "9,376 km", "fr": "9 376 km" }
+        },
+        {
+          "id": "orbital-period",
+          "label": { "en": "Orbit and rotation", "fr": "Orbite et rotation" },
+          "value": { "en": "7 h 39 min · synchronous", "fr": "7 h 39 min · synchrone" }
+        },
+        {
+          "id": "density",
+          "label": { "en": "Mean density", "fr": "Densité moyenne" },
+          "value": { "en": "1.86 g/cm³", "fr": "1,86 g/cm³" }
+        },
+        {
+          "id": "gravity",
+          "label": { "en": "Surface gravity", "fr": "Gravité en surface" },
+          "value": { "en": "About 0.0057 m/s²", "fr": "Environ 0,0057 m/s²" }
+        },
+        {
+          "id": "temperature",
+          "label": { "en": "Surface temperature", "fr": "Température en surface" },
+          "value": { "en": "−112 to −4 °C", "fr": "−112 à −4 °C" }
+        },
+        {
+          "id": "atmosphere",
+          "label": { "en": "Atmosphere", "fr": "Atmosphère" },
+          "value": { "en": "None", "fr": "Aucune" }
+        },
+        {
+          "id": "largest-crater",
+          "label": { "en": "Largest crater", "fr": "Plus grand cratère" },
+          "value": { "en": "Stickney · about 9.7 km", "fr": "Stickney · environ 9,7 km" }
+        },
+        {
+          "id": "discovery",
+          "label": { "en": "Discovery", "fr": "Découverte" },
+          "value": { "en": "Asaph Hall · 1877", "fr": "Asaph Hall · 1877" }
+        }
+      ]
+    },
+    {
+      "id": "internal-structure",
+      "type": "layers",
+      "title": { "en": "Probable internal structure", "fr": "Structure interne probable" }
+    }
+  ],
+  "sections": [
+    {
+      "id": "regolith",
+      "innerRadiusRatio": 0.94,
+      "outerRadiusRatio": 1,
+      "color": "#8b7764",
+      "labelPosition": [0.75, 0.55, 0.025],
+      "name": { "en": "Regolith", "fr": "Régolithe" },
+      "range": { "en": "Loose dust and impact debris", "fr": "Poussière meuble et débris d’impact" },
+      "description": {
+        "en": "A powdery, heavily cratered surface produced by billions of years of impacts. Landslides expose darker trails on steep crater walls.",
+        "fr": "Une surface poudreuse et fortement cratérisée, produite par des milliards d’années d’impacts. Des glissements de terrain révèlent des traînées sombres sur les parois abruptes."
+      }
+    },
+    {
+      "id": "porous-interior",
+      "innerRadiusRatio": 0,
+      "outerRadiusRatio": 0.94,
+      "color": "#4f4640",
+      "labelPosition": [0.34, -0.12, 0.025],
+      "name": { "en": "Porous interior", "fr": "Intérieur poreux" },
+      "range": { "en": "Rock, voids, and possibly ice", "fr": "Roche, vides et peut-être glace" },
+      "description": {
+        "en": "Its low density implies substantial internal porosity. Phobos may be a fractured aggregate rather than a compact, differentiated body; its exact composition and origin remain debated.",
+        "fr": "Sa faible densité implique une porosité interne importante. Phobos pourrait être un agrégat fracturé plutôt qu’un corps compact et différencié ; sa composition exacte et son origine restent débattues."
+      }
+    }
+  ]
+}

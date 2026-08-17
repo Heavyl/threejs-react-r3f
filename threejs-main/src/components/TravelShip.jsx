@@ -9,6 +9,7 @@ import {
 } from '../data/travelMetricsStore'
 import { easeInOutCubic } from '../utils/orbit'
 import { getBodyLabel } from '../i18n/translations'
+import SpacecraftAnalysisHotspots from './SpacecraftAnalysisHotspots'
 
 const SCREEN_ANCHOR_DISTANCE = 1
 const MODEL_PATH = `${import.meta.env.BASE_URL}models/travel-ship.glb`
@@ -36,7 +37,7 @@ function getParkingOrbit(body) {
   return { radiusKm, angularSpeed }
 }
 
-export default function TravelShip({ bodyRefs, focusedBody, language, mobilePerformance, shipFocused, onSelect, simulationTimeRef, settings, shipRef: sharedShipRef, travelPositionRef }) {
+export default function TravelShip({ analysisClosing, analysisConfig, analysisSectionId, bodyRefs, focusedBody, language, mobilePerformance, onAnalysisSectionSelect, shipFocused, onSelect, simulationTimeRef, settings, shipRef: sharedShipRef, travelPositionRef }) {
   const { camera } = useThree()
   const { scene } = useGLTF(MODEL_PATH)
   const shipModel = useMemo(() => {
@@ -297,6 +298,13 @@ export default function TravelShip({ bodyRefs, focusedBody, language, mobilePerf
           <coneGeometry args={[0.2, 1.2, 10]} />
           <meshBasicMaterial color="#8edbff" transparent opacity={0.42} blending={THREE.AdditiveBlending} depthTest depthWrite={false} />
         </mesh>
+        <SpacecraftAnalysisHotspots
+          closing={analysisClosing}
+          config={analysisConfig?.id === 'Ship' ? analysisConfig : null}
+          language={language}
+          onSelectSection={onAnalysisSectionSelect}
+          selectedSectionId={analysisSectionId}
+        />
       </group>
       {settings.showLabels && !metrics.active && !shipFocused && (
         <Html

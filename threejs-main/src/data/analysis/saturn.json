@@ -1,0 +1,28 @@
+{
+  "targetId": "Saturn",
+  "type": "layered-body",
+  "sonification": { "massEarths": 95.16, "densityKgM3": 687, "rotationHours": 10.656, "cycleDays": 10759.22, "temperatureK": 133, "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturnfact.html" },
+  "defaultSectionId": "metallic-hydrogen",
+  "title": { "en": "Inside Saturn", "fr": "À l’intérieur de Saturne" },
+  "summary": { "en": "Saturn is a hydrogen-helium giant whose fluid regions merge gradually. The cutaway is a schematic interpretation, not a set of sharp boundaries.", "fr": "Saturne est une géante d’hydrogène et d’hélium dont les régions fluides se fondent progressivement. La coupe est une interprétation schématique, pas un ensemble de limites nettes." },
+  "sources": ["https://science.nasa.gov/saturn/facts/"],
+  "panelSections": [
+    { "id": "key-facts", "type": "facts", "title": { "en": "Key facts", "fr": "Caractéristiques générales" }, "items": [
+      { "id": "diameter", "label": { "en": "Equatorial diameter", "fr": "Diamètre équatorial" }, "value": { "en": "120,536 km", "fr": "120 536 km" } },
+      { "id": "mass", "label": { "en": "Mass", "fr": "Masse" }, "value": { "en": "5.683 × 10²⁶ kg", "fr": "5,683 × 10²⁶ kg" } },
+      { "id": "distance", "label": { "en": "Mean distance from Sun", "fr": "Distance moyenne au Soleil" }, "value": { "en": "1.43 billion km · 9.5 AU", "fr": "1,43 milliard de km · 9,5 UA" } },
+      { "id": "orbit", "label": { "en": "Orbital period", "fr": "Période orbitale" }, "value": { "en": "29.4 years", "fr": "29,4 ans" } },
+      { "id": "rotation", "label": { "en": "Rotation period", "fr": "Période de rotation" }, "value": { "en": "About 10.7 hours", "fr": "Environ 10,7 heures" } },
+      { "id": "temperature", "label": { "en": "Mean cloud temperature", "fr": "Température moyenne des nuages" }, "value": { "en": "About −140 °C", "fr": "Environ −140 °C" } },
+      { "id": "density", "label": { "en": "Mean density", "fr": "Densité moyenne" }, "value": { "en": "687 kg/m³", "fr": "687 kg/m³" } },
+      { "id": "rings", "label": { "en": "Ring system", "fr": "Système d’anneaux" }, "value": { "en": "Ice and rock particles", "fr": "Particules de glace et de roche" } }
+    ] },
+    { "id": "internal-layers", "type": "layers", "title": { "en": "Internal regions", "fr": "Régions internes" } }
+  ],
+  "sections": [
+    { "id": "dense-core", "innerRadiusRatio": 0, "outerRadiusRatio": 0.22, "color": "#c99570", "labelPosition": [0.18, -0.38, 0.025], "name": { "en": "Dense core", "fr": "Noyau dense" }, "range": { "en": "Rock, ice, and metals", "fr": "Roches, glaces et métaux" }, "description": { "en": "A dense central region rich in heavier materials, probably mixed into the surrounding fluid rather than sharply separated.", "fr": "Une région centrale dense, riche en matériaux lourds, probablement mélangée au fluide environnant plutôt que nettement séparée." } },
+    { "id": "metallic-hydrogen", "innerRadiusRatio": 0.22, "outerRadiusRatio": 0.52, "color": "#cf784b", "labelPosition": [0.42, -0.1, 0.025], "name": { "en": "Metallic hydrogen", "fr": "Hydrogène métallique" }, "range": { "en": "Conductive fluid", "fr": "Fluide conducteur" }, "description": { "en": "Under immense pressure, hydrogen becomes an electrically conductive liquid that participates in generating Saturn’s magnetic field.", "fr": "Sous une pression immense, l’hydrogène devient un liquide conducteur qui participe à la génération du champ magnétique de Saturne." } },
+    { "id": "molecular-hydrogen", "innerRadiusRatio": 0.52, "outerRadiusRatio": 0.97, "color": "#dfb96e", "labelPosition": [0.7, 0.25, 0.025], "name": { "en": "Molecular hydrogen", "fr": "Hydrogène moléculaire" }, "range": { "en": "Hydrogen-helium envelope", "fr": "Enveloppe d’hydrogène-hélium" }, "description": { "en": "A deep fluid envelope dominated by hydrogen and helium, becoming gaseous toward the cloud tops.", "fr": "Une profonde enveloppe fluide dominée par l’hydrogène et l’hélium, qui devient gazeuse vers le sommet des nuages." } },
+    { "id": "cloud-layers", "innerRadiusRatio": 0.97, "outerRadiusRatio": 1, "color": "#f4dfaa", "labelPosition": [0.9, 0.61, 0.025], "name": { "en": "Cloud layers", "fr": "Couches nuageuses" }, "range": { "en": "Visible atmosphere", "fr": "Atmosphère visible" }, "description": { "en": "Pale bands and storms occupy the upper atmosphere above decks of ammonia, ammonium hydrosulfide, and water clouds.", "fr": "Des bandes pâles et des tempêtes occupent la haute atmosphère au-dessus de couches de nuages d’ammoniac, d’hydrosulfure d’ammonium et d’eau." } }
+  ]
+}

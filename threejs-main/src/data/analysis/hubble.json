@@ -1,0 +1,26 @@
+{
+  "targetId": "Hubble",
+  "type": "information",
+  "defaultSectionId": "optics",
+  "title": { "en": "Hubble Space Telescope", "fr": "Télescope spatial Hubble" },
+  "summary": { "en": "A serviceable observatory in low Earth orbit that studies the Universe from ultraviolet through near-infrared wavelengths.", "fr": "Un observatoire réparable en orbite terrestre basse qui étudie l’Univers de l’ultraviolet au proche infrarouge." },
+  "sources": ["https://science.nasa.gov/mission/hubble/overview/about-hubble/"],
+  "panelSections": [
+    { "id": "key-facts", "type": "facts", "title": { "en": "Key facts", "fr": "Caractéristiques générales" }, "items": [
+      { "id": "launch", "label": { "en": "Launch", "fr": "Lancement" }, "value": { "en": "24 April 1990", "fr": "24 avril 1990" } },
+      { "id": "length", "label": { "en": "Length", "fr": "Longueur" }, "value": { "en": "13.2 m", "fr": "13,2 m" } },
+      { "id": "diameter", "label": { "en": "Maximum diameter", "fr": "Diamètre maximal" }, "value": { "en": "4.3 m", "fr": "4,3 m" } },
+      { "id": "mass", "label": { "en": "Mass", "fr": "Masse" }, "value": { "en": "12,200 kg", "fr": "12 200 kg" } },
+      { "id": "mirror", "label": { "en": "Primary mirror", "fr": "Miroir primaire" }, "value": { "en": "2.4 m", "fr": "2,4 m" } },
+      { "id": "altitude", "label": { "en": "Orbit altitude", "fr": "Altitude orbitale" }, "value": { "en": "About 483 km", "fr": "Environ 483 km" } },
+      { "id": "period", "label": { "en": "Orbit period", "fr": "Période orbitale" }, "value": { "en": "About 95 minutes", "fr": "Environ 95 minutes" } }
+    ] },
+    { "id": "technical-details", "type": "details", "title": { "en": "Observatory systems", "fr": "Systèmes de l’observatoire" } }
+  ],
+  "sections": [
+    { "id": "optics", "hotspotPosition": [0, 0, -0.00000068], "color": "#d9efff", "name": { "en": "Primary mirror", "fr": "Miroir primaire" }, "range": { "en": "2.4 m Ritchey–Chrétien reflector", "fr": "Réflecteur Ritchey–Chrétien de 2,4 m" }, "description": { "en": "The primary and secondary mirrors collect and focus light through the central optical tube. Hubble’s location above most of the atmosphere preserves sharp ultraviolet-to-infrared observations.", "fr": "Les miroirs primaire et secondaire collectent et focalisent la lumière dans le tube optique central. La position de Hubble au-dessus de l’essentiel de l’atmosphère préserve des observations nettes de l’ultraviolet à l’infrarouge." } },
+    { "id": "instruments", "hotspotPosition": [0, 0, 0.00000048], "color": "#75bfff", "name": { "en": "Instrument compartment", "fr": "Compartiment des instruments" }, "range": { "en": "Cameras and spectrographs", "fr": "Caméras et spectrographes" }, "description": { "en": "The aft compartment houses replaceable cameras, spectrographs, and supporting electronics that record ultraviolet, visible, and near-infrared light.", "fr": "Le compartiment arrière accueille les caméras, spectrographes et électroniques remplaçables qui enregistrent l’ultraviolet, le visible et le proche infrarouge." } },
+    { "id": "solar-arrays", "hotspotPosition": [0.00000062, 0, 0.0000001], "color": "#4f85c5", "name": { "en": "Solar arrays", "fr": "Panneaux solaires" }, "range": { "en": "Power generation and battery charging", "fr": "Production électrique et recharge des batteries" }, "description": { "en": "Two deployable arrays convert sunlight into electricity. Batteries power the observatory during each passage through Earth’s shadow.", "fr": "Deux panneaux déployables convertissent la lumière solaire en électricité. Les batteries alimentent l’observatoire lors de chaque passage dans l’ombre terrestre." } },
+    { "id": "pointing", "hotspotPosition": [0, 0.0000003, 0.0000004], "color": "#ffd16a", "name": { "en": "Pointing systems", "fr": "Systèmes de pointage" }, "range": { "en": "Gyroscopes, reaction wheels, and guide sensors", "fr": "Gyroscopes, roues de réaction et capteurs de guidage" }, "description": { "en": "Internal wheels rotate the telescope without firing thrusters, while gyroscopes, star trackers, and fine-guidance sensors keep a selected target extremely steady.", "fr": "Des roues internes orientent le télescope sans propulseurs, tandis que gyroscopes, viseurs d’étoiles et capteurs de guidage fin maintiennent la cible avec une extrême stabilité." } }
+  ]
+}

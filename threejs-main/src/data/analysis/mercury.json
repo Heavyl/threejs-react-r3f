@@ -1,0 +1,32 @@
+{
+  "targetId": "Mercury",
+  "type": "layered-body",
+  "sonification": { "massEarths": 0.0553, "densityKgM3": 5429, "rotationHours": 1407.6, "cycleDays": 87.969, "temperatureK": 440, "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html" },
+  "defaultSectionId": "core",
+  "title": { "en": "Inside Mercury", "fr": "À l’intérieur de Mercure" },
+  "summary": { "en": "Mercury is the smallest planet and has an exceptionally large metallic core beneath a thin rocky shell.", "fr": "Mercure est la plus petite planète et possède un noyau métallique exceptionnellement volumineux sous une mince enveloppe rocheuse." },
+  "sources": ["https://science.nasa.gov/mercury/facts/"],
+  "panelSections": [
+    {
+      "id": "key-facts", "type": "facts", "title": { "en": "Key facts", "fr": "Caractéristiques générales" },
+      "items": [
+        { "id": "diameter", "label": { "en": "Diameter", "fr": "Diamètre" }, "value": { "en": "4,879 km", "fr": "4 879 km" } },
+        { "id": "mass", "label": { "en": "Mass", "fr": "Masse" }, "value": { "en": "3.301 × 10²³ kg", "fr": "3,301 × 10²³ kg" } },
+        { "id": "solar-distance", "label": { "en": "Mean distance from Sun", "fr": "Distance moyenne au Soleil" }, "value": { "en": "58 million km · 0.39 AU", "fr": "58 millions de km · 0,39 UA" } },
+        { "id": "year", "label": { "en": "Orbital period", "fr": "Période orbitale" }, "value": { "en": "87.97 Earth days", "fr": "87,97 jours terrestres" } },
+        { "id": "rotation", "label": { "en": "Sidereal rotation", "fr": "Rotation sidérale" }, "value": { "en": "58.65 Earth days", "fr": "58,65 jours terrestres" } },
+        { "id": "temperature", "label": { "en": "Surface temperature", "fr": "Température en surface" }, "value": { "en": "−180 to 430 °C", "fr": "−180 à 430 °C" } },
+        { "id": "gravity", "label": { "en": "Surface gravity", "fr": "Gravité en surface" }, "value": { "en": "3.7 m/s²", "fr": "3,7 m/s²" } },
+        { "id": "tilt", "label": { "en": "Axial tilt", "fr": "Inclinaison de l’axe" }, "value": { "en": "About 0.03°", "fr": "Environ 0,03°" } },
+        { "id": "atmosphere", "label": { "en": "Atmosphere", "fr": "Atmosphère" }, "value": { "en": "Very thin exosphere", "fr": "Exosphère très ténue" } },
+        { "id": "moons", "label": { "en": "Moons", "fr": "Lunes" }, "value": { "en": "None", "fr": "Aucune" } }
+      ]
+    },
+    { "id": "internal-layers", "type": "layers", "title": { "en": "Internal layers", "fr": "Couches internes" } }
+  ],
+  "sections": [
+    { "id": "crust", "innerRadiusRatio": 0.985, "outerRadiusRatio": 1, "color": "#8d8174", "labelPosition": [0.87, 0.61, 0.025], "name": { "en": "Crust", "fr": "Croûte" }, "range": { "en": "Thin solid exterior", "fr": "Fine enveloppe solide" }, "description": { "en": "A rigid, heavily cratered silicate surface shaped by impacts, volcanism, and the planet’s contraction as it cooled.", "fr": "Une surface silicatée rigide et fortement cratérisée, façonnée par les impacts, le volcanisme et la contraction de la planète lors de son refroidissement." } },
+    { "id": "mantle", "innerRadiusRatio": 0.85, "outerRadiusRatio": 0.985, "color": "#b67645", "labelPosition": [0.69, 0.29, 0.025], "name": { "en": "Rocky mantle", "fr": "Manteau rocheux" }, "range": { "en": "Part of a shell about 400 km thick", "fr": "Partie d’une enveloppe d’environ 400 km" }, "description": { "en": "A comparatively thin silicate mantle surrounding the enormous core. It preserves evidence of Mercury’s early thermal and volcanic history.", "fr": "Un manteau silicaté relativement mince entourant l’immense noyau. Il conserve les traces de l’histoire thermique et volcanique primitive de Mercure." } },
+    { "id": "core", "innerRadiusRatio": 0, "outerRadiusRatio": 0.85, "color": "#d6a354", "labelPosition": [0.42, -0.13, 0.025], "name": { "en": "Metallic core", "fr": "Noyau métallique" }, "range": { "en": "Radius about 2,074 km", "fr": "Rayon d’environ 2 074 km" }, "description": { "en": "An iron-rich core occupying roughly 85% of the planet’s radius. Evidence indicates that at least part of it remains molten or liquid.", "fr": "Un noyau riche en fer occupant environ 85 % du rayon planétaire. Les observations indiquent qu’une partie au moins demeure fondue ou liquide." } }
+  ]
+}

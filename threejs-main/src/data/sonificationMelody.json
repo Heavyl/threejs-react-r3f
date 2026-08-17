@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "loop": true,
+  "steps": [
+    { "semitones": 0, "durationSeconds": 2.4, "transitionSeconds": 0.28 },
+    { "semitones": 3, "durationSeconds": 1.6, "transitionSeconds": 0.22 },
+    { "semitones": 7, "durationSeconds": 2.2, "transitionSeconds": 0.32 },
+    { "semitones": 5, "durationSeconds": 1.4, "transitionSeconds": 0.2 },
+    { "frequencyRatio": 1.5, "durationSeconds": 2.6, "transitionSeconds": 0.38 },
+    { "semitones": 7, "durationSeconds": 1.8, "transitionSeconds": 0.25 },
+    { "semitones": 2, "durationSeconds": 2.2, "transitionSeconds": 0.32 },
+    { "semitones": 0, "durationSeconds": 2.8, "transitionSeconds": 0.4 }
+  ]
+}

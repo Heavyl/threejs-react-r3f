@@ -1,0 +1,23 @@
+{
+  "targetId": "Ship",
+  "type": "information",
+  "defaultSectionId": "flight-deck",
+  "title": { "en": "Your spacecraft", "fr": "Votre vaisseau" },
+  "summary": { "en": "The simulation’s interplanetary vehicle. Its displayed scale, trajectory, and speed adapt to preserve readable travel across the compressed Solar System.", "fr": "Le véhicule interplanétaire de la simulation. Son échelle affichée, sa trajectoire et sa vitesse s’adaptent pour conserver un voyage lisible dans le Système solaire compressé." },
+  "panelSections": [
+    { "id": "key-facts", "type": "facts", "title": { "en": "Simulation parameters", "fr": "Paramètres de simulation" }, "items": [
+      { "id": "role", "label": { "en": "Role", "fr": "Rôle" }, "value": { "en": "Interplanetary navigation vehicle", "fr": "Véhicule de navigation interplanétaire" } },
+      { "id": "parking-speed", "label": { "en": "Parking-orbit speed", "fr": "Vitesse en orbite d’attente" }, "value": { "en": "7.66 km/s", "fr": "7,66 km/s" } },
+      { "id": "travel-speed", "label": { "en": "Transit speed", "fr": "Vitesse de transit" }, "value": { "en": "User-configurable", "fr": "Réglable par l’utilisateur" } },
+      { "id": "scale", "label": { "en": "Displayed scale", "fr": "Échelle affichée" }, "value": { "en": "Adaptive for visibility", "fr": "Adaptative pour la visibilité" } },
+      { "id": "guidance", "label": { "en": "Trajectory model", "fr": "Modèle de trajectoire" }, "value": { "en": "Smooth curved guidance", "fr": "Guidage courbe et fluide" } }
+    ] },
+    { "id": "technical-details", "type": "details", "title": { "en": "Simulation systems", "fr": "Systèmes de simulation" } }
+  ],
+  "sections": [
+    { "id": "flight-deck", "hotspotPosition": [0, 0.42, -1.25], "color": "#73c7ff", "name": { "en": "Flight deck", "fr": "Poste de pilotage" }, "range": { "en": "Navigation and vehicle control", "fr": "Navigation et contrôle du véhicule" }, "description": { "en": "The forward flight deck represents the crew interface for navigation, targeting, and vehicle status. In the simulation, guidance can retarget smoothly from the current trajectory.", "fr": "Le poste de pilotage avant représente l’interface de navigation, de ciblage et de surveillance du véhicule. Dans la simulation, le guidage peut changer de cible en douceur depuis la trajectoire actuelle." } },
+    { "id": "central-hull", "hotspotPosition": [0, 0.32, 0], "color": "#9d8cff", "name": { "en": "Central hull", "fr": "Coque centrale" }, "range": { "en": "Crew and mission compartment", "fr": "Compartiment équipage et mission" }, "description": { "en": "The central hull is the model’s main habitable and structural volume. This spacecraft is fictional, so its internal arrangement is illustrative rather than an engineering specification.", "fr": "La coque centrale constitue le volume habitable et structurel principal du modèle. Ce vaisseau étant fictif, son organisation interne est illustrative et non une spécification d’ingénierie." } },
+    { "id": "guidance-sensors", "hotspotPosition": [0, 0.88, -0.48], "color": "#ffd26c", "name": { "en": "Guidance sensors", "fr": "Capteurs de guidage" }, "range": { "en": "Attitude and trajectory reference", "fr": "Référence d’attitude et de trajectoire" }, "description": { "en": "The upper sensor area represents star tracking, inertial navigation, and communications equipment used to establish attitude and follow the curved obstacle-aware route.", "fr": "La zone supérieure représente les viseurs d’étoiles, la navigation inertielle et les communications utilisés pour déterminer l’attitude et suivre la trajectoire courbe évitant les obstacles." } },
+    { "id": "engines", "hotspotPosition": [0, 0.05, 2.15], "color": "#7ee0b5", "name": { "en": "Twin engines", "fr": "Double motorisation" }, "range": { "en": "Visible transit propulsion", "fr": "Propulsion visible en transit" }, "description": { "en": "The two aft exhausts visualize thrust during transit. Their appearance and the vehicle’s displayed scale are cinematic simulation elements, not a claim about a real propulsion technology.", "fr": "Les deux échappements arrière visualisent la poussée pendant le transit. Leur apparence et l’échelle affichée du véhicule sont des éléments cinématiques de la simulation, pas la représentation d’une technologie de propulsion réelle." } }
+  ]
+}

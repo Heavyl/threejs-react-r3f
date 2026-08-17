@@ -1,0 +1,26 @@
+{
+  "targetId": "ISS",
+  "type": "information",
+  "defaultSectionId": "pressurized-modules",
+  "title": { "en": "International Space Station", "fr": "Station spatiale internationale" },
+  "summary": { "en": "A permanently crewed orbital laboratory assembled through international cooperation and dedicated to research in microgravity.", "fr": "Un laboratoire orbital habité en permanence, assemblé par coopération internationale et consacré à la recherche en microgravité." },
+  "sources": ["https://www.nasa.gov/international-space-station/"],
+  "panelSections": [
+    { "id": "key-facts", "type": "facts", "title": { "en": "Key facts", "fr": "Caractéristiques générales" }, "items": [
+      { "id": "type", "label": { "en": "Type", "fr": "Type" }, "value": { "en": "Crewed orbital laboratory", "fr": "Laboratoire orbital habité" } },
+      { "id": "assembly", "label": { "en": "Assembly began", "fr": "Début de l’assemblage" }, "value": { "en": "1998", "fr": "1998" } },
+      { "id": "altitude", "label": { "en": "Typical altitude", "fr": "Altitude typique" }, "value": { "en": "About 400 km", "fr": "Environ 400 km" } },
+      { "id": "speed", "label": { "en": "Orbital speed", "fr": "Vitesse orbitale" }, "value": { "en": "About 28,000 km/h", "fr": "Environ 28 000 km/h" } },
+      { "id": "period", "label": { "en": "Orbit period", "fr": "Période orbitale" }, "value": { "en": "About 90 minutes", "fr": "Environ 90 minutes" } },
+      { "id": "mass", "label": { "en": "Mass", "fr": "Masse" }, "value": { "en": "Over 362,000 kg", "fr": "Plus de 362 000 kg" } },
+      { "id": "inclination", "label": { "en": "Orbital inclination", "fr": "Inclinaison orbitale" }, "value": { "en": "51.6°", "fr": "51,6°" } }
+    ] },
+    { "id": "technical-details", "type": "details", "title": { "en": "Mission and design", "fr": "Mission et conception" } }
+  ],
+  "sections": [
+    { "id": "pressurized-modules", "hotspotPosition": [0, 0.0000012, 0], "color": "#e5edf2", "name": { "en": "Pressurized modules", "fr": "Modules pressurisés" }, "range": { "en": "Laboratories, living quarters, and nodes", "fr": "Laboratoires, espaces de vie et nœuds" }, "description": { "en": "The central pressurized complex contains research laboratories, crew quarters, life-support equipment, storage, docking nodes, and observation areas contributed by several partner agencies.", "fr": "Le complexe pressurisé central contient les laboratoires, quartiers d’équipage, équipements de survie, espaces de stockage, nœuds d’amarrage et zones d’observation fournis par plusieurs agences partenaires." } },
+    { "id": "integrated-truss", "hotspotPosition": [0.0000046, 0, 0], "color": "#b8c4ce", "name": { "en": "Integrated truss", "fr": "Poutre intégrée" }, "range": { "en": "Station’s structural backbone", "fr": "Colonne vertébrale de la station" }, "description": { "en": "The long truss supports solar arrays, radiators, external payloads, electrical distribution, cooling lines, and the rails used by the mobile servicing system.", "fr": "La longue poutre supporte les panneaux solaires, radiateurs, charges utiles externes, distribution électrique, circuits de refroidissement et rails du système de maintenance mobile." } },
+    { "id": "solar-arrays", "hotspotPosition": [-0.0000041, 0, 0.0000022], "color": "#4f8fd1", "name": { "en": "Solar arrays", "fr": "Panneaux solaires" }, "range": { "en": "Eight large power-generating wings", "fr": "Huit grandes ailes génératrices" }, "description": { "en": "Rotating photovoltaic wings track the Sun and supply electricity to the station. Batteries maintain power while the ISS passes through Earth’s shadow.", "fr": "Des ailes photovoltaïques orientables suivent le Soleil et alimentent la station. Les batteries maintiennent l’énergie lorsque l’ISS traverse l’ombre de la Terre." } },
+    { "id": "robotics", "hotspotPosition": [0.0000052, 0.0000007, 0], "color": "#ffc56d", "name": { "en": "Robotics and external work", "fr": "Robotique et travaux externes" }, "range": { "en": "Canadarm2, Dextre, and mobile base", "fr": "Canadarm2, Dextre et base mobile" }, "description": { "en": "The robotic system captures visiting vehicles, moves equipment and astronauts, and performs maintenance across much of the station’s exterior.", "fr": "Le système robotique capture des véhicules visiteurs, déplace équipements et astronautes et réalise des opérations de maintenance sur une grande partie de l’extérieur de la station." } }
+  ]
+}

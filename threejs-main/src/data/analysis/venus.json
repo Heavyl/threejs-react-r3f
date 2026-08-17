@@ -1,0 +1,32 @@
+{
+  "targetId": "Venus",
+  "type": "layered-body",
+  "sonification": { "massEarths": 0.815, "densityKgM3": 5243, "rotationHours": -5832.5, "cycleDays": 224.701, "temperatureK": 737, "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html" },
+  "defaultSectionId": "mantle",
+  "title": { "en": "Inside Venus", "fr": "À l’intérieur de Vénus" },
+  "summary": { "en": "Venus is close to Earth in size and likely shares the same broad iron-core, rocky-mantle, and crust structure, beneath an extreme atmosphere.", "fr": "Vénus est proche de la Terre par sa taille et partage probablement la même organisation générale : noyau de fer, manteau rocheux et croûte, sous une atmosphère extrême." },
+  "sources": ["https://science.nasa.gov/venus/venus-facts/"],
+  "panelSections": [
+    {
+      "id": "key-facts", "type": "facts", "title": { "en": "Key facts", "fr": "Caractéristiques générales" },
+      "items": [
+        { "id": "diameter", "label": { "en": "Diameter", "fr": "Diamètre" }, "value": { "en": "12,104 km", "fr": "12 104 km" } },
+        { "id": "mass", "label": { "en": "Mass", "fr": "Masse" }, "value": { "en": "4.867 × 10²⁴ kg", "fr": "4,867 × 10²⁴ kg" } },
+        { "id": "solar-distance", "label": { "en": "Mean distance from Sun", "fr": "Distance moyenne au Soleil" }, "value": { "en": "108.2 million km · 0.72 AU", "fr": "108,2 millions de km · 0,72 UA" } },
+        { "id": "year", "label": { "en": "Orbital period", "fr": "Période orbitale" }, "value": { "en": "224.7 Earth days", "fr": "224,7 jours terrestres" } },
+        { "id": "rotation", "label": { "en": "Rotation", "fr": "Rotation" }, "value": { "en": "243 days · retrograde", "fr": "243 jours · rétrograde" } },
+        { "id": "temperature", "label": { "en": "Mean surface temperature", "fr": "Température moyenne en surface" }, "value": { "en": "About 467 °C", "fr": "Environ 467 °C" } },
+        { "id": "pressure", "label": { "en": "Surface pressure", "fr": "Pression en surface" }, "value": { "en": "About 93 Earth atmospheres", "fr": "Environ 93 atmosphères terrestres" } },
+        { "id": "gravity", "label": { "en": "Surface gravity", "fr": "Gravité en surface" }, "value": { "en": "8.87 m/s²", "fr": "8,87 m/s²" } },
+        { "id": "atmosphere", "label": { "en": "Atmosphere", "fr": "Atmosphère" }, "value": { "en": "Mostly CO₂ · sulfuric-acid clouds", "fr": "Surtout CO₂ · nuages d’acide sulfurique" } },
+        { "id": "moons", "label": { "en": "Moons", "fr": "Lunes" }, "value": { "en": "None", "fr": "Aucune" } }
+      ]
+    },
+    { "id": "internal-layers", "type": "layers", "title": { "en": "Probable internal layers", "fr": "Couches internes probables" } }
+  ],
+  "sections": [
+    { "id": "crust", "innerRadiusRatio": 0.985, "outerRadiusRatio": 1, "color": "#b99763", "labelPosition": [0.87, 0.61, 0.025], "name": { "en": "Crust", "fr": "Croûte" }, "range": { "en": "Thin rocky exterior", "fr": "Fine enveloppe rocheuse" }, "description": { "en": "A basaltic exterior reshaped by widespread volcanism and deformation. Venus does not show Earth-like global plate tectonics today.", "fr": "Une enveloppe basaltique remodelée par un volcanisme et des déformations étendus. Vénus ne présente pas aujourd’hui de tectonique globale comparable à celle de la Terre." } },
+    { "id": "mantle", "innerRadiusRatio": 0.5, "outerRadiusRatio": 0.985, "color": "#d2743d", "labelPosition": [0.66, 0.2, 0.025], "name": { "en": "Hot-rock mantle", "fr": "Manteau rocheux chaud" }, "range": { "en": "Silicate interior", "fr": "Intérieur silicaté" }, "description": { "en": "A thick mantle of hot silicate rock. Heat and pressure within it drive deformation and volcanic activity at the surface.", "fr": "Un épais manteau de roches silicatées chaudes. Sa chaleur et sa pression alimentent les déformations et l’activité volcanique de la surface." } },
+    { "id": "core", "innerRadiusRatio": 0, "outerRadiusRatio": 0.5, "color": "#e3ad59", "labelPosition": [0.3, -0.2, 0.025], "name": { "en": "Iron-rich core", "fr": "Noyau riche en fer" }, "range": { "en": "Size and state remain uncertain", "fr": "Taille et état encore incertains" }, "description": { "en": "An inferred metallic core broadly comparable to Earth’s. Venus lacks a strong internally generated magnetic field, so its exact state remains an important question.", "fr": "Un noyau métallique supposé, globalement comparable à celui de la Terre. Vénus ne possède pas de puissant champ magnétique interne ; son état exact reste donc une question majeure." } }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "targetId": "Mars",
+  "type": "layered-body",
+  "sonification": { "massEarths": 0.1074, "densityKgM3": 3934, "rotationHours": 24.6229, "cycleDays": 686.98, "temperatureK": 208, "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html" },
+  "defaultSectionId": "mantle",
+  "title": { "en": "Inside Mars", "fr": "À l’intérieur de Mars" },
+  "summary": {
+    "en": "Mars is a differentiated rocky planet with a thin crust, a silicate mantle, and a large metallic core rich in sulfur.",
+    "fr": "Mars est une planète rocheuse différenciée, formée d’une croûte mince, d’un manteau silicaté et d’un vaste noyau métallique riche en soufre."
+  },
+  "sources": [
+    "https://science.nasa.gov/mars/facts/",
+    "https://science.nasa.gov/learn/basics-of-space-flight/chapter1-2/"
+  ],
+  "panelSections": [
+    {
+      "id": "key-facts",
+      "type": "facts",
+      "title": { "en": "Key facts", "fr": "Caractéristiques générales" },
+      "items": [
+        {
+          "id": "diameter",
+          "label": { "en": "Mean diameter", "fr": "Diamètre moyen" },
+          "value": { "en": "6,779 km", "fr": "6 779 km" }
+        },
+        {
+          "id": "mass",
+          "label": { "en": "Mass", "fr": "Masse" },
+          "value": { "en": "6.417 × 10²³ kg", "fr": "6,417 × 10²³ kg" }
+        },
+        {
+          "id": "solar-distance",
+          "label": { "en": "Mean distance from Sun", "fr": "Distance moyenne au Soleil" },
+          "value": { "en": "228 million km · 1.52 AU", "fr": "228 millions de km · 1,52 UA" }
+        },
+        {
+          "id": "orbital-period",
+          "label": { "en": "Orbital period", "fr": "Période orbitale" },
+          "value": { "en": "687 Earth days", "fr": "687 jours terrestres" }
+        },
+        {
+          "id": "rotation-period",
+          "label": { "en": "Rotation period", "fr": "Période de rotation" },
+          "value": { "en": "24 h 37 min", "fr": "24 h 37 min" }
+        },
+        {
+          "id": "temperature",
+          "label": { "en": "Mean temperature", "fr": "Température moyenne" },
+          "value": { "en": "About −63 °C", "fr": "Environ −63 °C" }
+        },
+        {
+          "id": "surface-gravity",
+          "label": { "en": "Surface gravity", "fr": "Gravité en surface" },
+          "value": { "en": "3.71 m/s²", "fr": "3,71 m/s²" }
+        },
+        {
+          "id": "axial-tilt",
+          "label": { "en": "Axial tilt", "fr": "Inclinaison de l’axe" },
+          "value": { "en": "25.19°", "fr": "25,19°" }
+        },
+        {
+          "id": "atmosphere",
+          "label": { "en": "Atmosphere", "fr": "Atmosphère" },
+          "value": { "en": "Thin · mostly CO₂", "fr": "Ténue · surtout du CO₂" }
+        },
+        {
+          "id": "surface-pressure",
+          "label": { "en": "Surface pressure", "fr": "Pression en surface" },
+          "value": { "en": "About 0.0069–0.009 bar", "fr": "Environ 0,0069 à 0,009 bar" }
+        },
+        {
+          "id": "moons",
+          "label": { "en": "Natural satellites", "fr": "Satellites naturels" },
+          "value": { "en": "2 · Phobos and Deimos", "fr": "2 · Phobos et Déimos" }
+        },
+        {
+          "id": "surface-area",
+          "label": { "en": "Surface area", "fr": "Superficie" },
+          "value": { "en": "144.8 million km²", "fr": "144,8 millions de km²" }
+        }
+      ]
+    },
+    {
+      "id": "internal-layers",
+      "type": "layers",
+      "title": { "en": "Internal layers", "fr": "Couches internes" }
+    }
+  ],
+  "sections": [
+    {
+      "id": "crust",
+      "innerRadiusRatio": 0.985,
+      "outerRadiusRatio": 1,
+      "color": "#b86b46",
+      "labelPosition": [0.86, 0.61, 0.025],
+      "name": { "en": "Crust", "fr": "Croûte" },
+      "range": { "en": "About 10–50 km thick", "fr": "Environ 10 à 50 km d’épaisseur" },
+      "description": {
+        "en": "A solid, iron-rich basaltic shell. Its oxidized minerals and surface dust give Mars its characteristic reddish color.",
+        "fr": "Une enveloppe basaltique solide et riche en fer. Ses minéraux oxydés et la poussière de surface donnent à Mars sa couleur rouge caractéristique."
+      }
+    },
+    {
+      "id": "mantle",
+      "innerRadiusRatio": 0.54,
+      "outerRadiusRatio": 0.985,
+      "color": "#d98243",
+      "labelPosition": [0.66, 0.2, 0.025],
+      "name": { "en": "Mantle", "fr": "Manteau" },
+      "range": { "en": "About 1,240–1,880 km thick", "fr": "Environ 1 240 à 1 880 km d’épaisseur" },
+      "description": {
+        "en": "A rocky silicate layer that transported heat from the interior. Mars is no longer globally tectonically active, but its mantle retains the record of immense volcanism.",
+        "fr": "Une couche rocheuse silicatée qui a transporté la chaleur interne. Mars n’a plus de tectonique globale active, mais son manteau conserve la trace d’un volcanisme immense."
+      }
+    },
+    {
+      "id": "core",
+      "innerRadiusRatio": 0,
+      "outerRadiusRatio": 0.54,
+      "color": "#f2b34d",
+      "labelPosition": [0.3, -0.2, 0.025],
+      "name": { "en": "Core", "fr": "Noyau" },
+      "range": { "en": "Estimated radius: 1,500–2,100 km", "fr": "Rayon estimé : 1 500 à 2 100 km" },
+      "description": {
+        "en": "A dense metallic region composed mainly of iron, nickel, and sulfur. Its relatively light elements help explain the core’s large inferred size.",
+        "fr": "Une région métallique dense composée surtout de fer, de nickel et de soufre. Ses éléments relativement légers contribuent à expliquer la grande taille estimée du noyau."
+      }
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { BODY_BY_NAME, SCALE } from '../data/celestialBodies'
 import { createFadingOrbitTrailGeometry, updateFadingOrbitTrail } from '../utils/orbitTrail'
+import SpacecraftAnalysisHotspots from './SpacecraftAnalysisHotspots'
 
 const KM_TO_WORLD = SCALE
 const EARTH_RADIUS_KM = BODY_BY_NAME.get('Earth').radiusKm
@@ -108,7 +109,7 @@ function JWSTModel() {
   )
 }
 
-function Hubble({ bodyRefs, focused, mobilePerformance, onSelect, settings, simulationTimeRef, telescopeRef, visible }) {
+function Hubble({ analysisClosing, analysisConfig, analysisSectionId, bodyRefs, focused, language, mobilePerformance, onAnalysisSectionSelect, onSelect, settings, simulationTimeRef, telescopeRef, visible }) {
   const rootRef = useRef()
   const orbitTrailSegments = mobilePerformance ? 128 : 384
   const orbitGeometry = useMemo(
@@ -163,13 +164,20 @@ function Hubble({ bodyRefs, focused, mobilePerformance, onSelect, settings, simu
       </line>
       <group ref={telescopeRef} onPointerDown={select}>
         <HubbleModel />
+        <SpacecraftAnalysisHotspots
+          closing={analysisClosing}
+          config={analysisConfig?.id === 'Hubble' ? analysisConfig : null}
+          language={language}
+          onSelectSection={onAnalysisSectionSelect}
+          selectedSectionId={analysisSectionId}
+        />
         {settings.showLabels && !focused && <SpacecraftLabel className="hubble-label" focused={focused} onSelect={select}>Hubble</SpacecraftLabel>}
       </group>
     </group>
   )
 }
 
-function Webb({ bodyRefs, focused, mobilePerformance, onSelect, settings, simulationTimeRef, telescopeRef, visible }) {
+function Webb({ analysisClosing, analysisConfig, analysisSectionId, bodyRefs, focused, language, mobilePerformance, onAnalysisSectionSelect, onSelect, settings, simulationTimeRef, telescopeRef, visible }) {
   const rootRef = useRef()
   const orbitTrailSegments = mobilePerformance ? 192 : 512
   const orbitGeometry = useMemo(
@@ -224,6 +232,13 @@ function Webb({ bodyRefs, focused, mobilePerformance, onSelect, settings, simula
       </line>
       <group ref={telescopeRef} onPointerDown={select}>
         <JWSTModel />
+        <SpacecraftAnalysisHotspots
+          closing={analysisClosing}
+          config={analysisConfig?.id === 'JWST' ? analysisConfig : null}
+          language={language}
+          onSelectSection={onAnalysisSectionSelect}
+          selectedSectionId={analysisSectionId}
+        />
         {settings.showLabels && !focused && <SpacecraftLabel className="jwst-label" focused={focused} onSelect={select}>JWST</SpacecraftLabel>}
       </group>
     </group>

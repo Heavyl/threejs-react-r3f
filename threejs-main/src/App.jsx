@@ -2,6 +2,7 @@ import { useProgress } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { useSolarAudio } from './audio/useSolarAudio'
+import AnalysisPanel from './components/AnalysisPanel'
 import ControlPanel from './components/ControlPanel'
 import DistanceCounter from './components/DistanceCounter'
 import MinimapPanel from './components/MinimapPanel'
@@ -11,6 +12,7 @@ import {
   SPEED_OF_LIGHT_KM_S,
   TRAVEL_SPEED_PRESETS,
 } from './config/systemSettings'
+import { getAnalysisTarget } from './data/analysisCatalog'
 import { getBodyLabel, TRANSLATIONS } from './i18n/translations'
 import SolarSystem from './SolarSystem'
 import { formatDuration } from './utils/formatDuration'
@@ -152,14 +154,26 @@ export default function App() {
   const [settingsCollapsed, setSettingsCollapsed] = useState(true)
   const [mobileTravelSpeedOpen, setMobileTravelSpeedOpen] = useState(false)
   const [minimapCollapsed, setMinimapCollapsed] = useState(true)
+  const [analysisTargetId, setAnalysisTargetId] = useState(null)
+  const [analysisSectionId, setAnalysisSectionId] = useState(null)
+  const [analysisClosing, setAnalysisClosing] = useState(false)
+  const [analysisLayerRevealRequestId, setAnalysisLayerRevealRequestId] = useState(0)
   const instantTravelSequence = useRef(0)
   const cameraLookSequence = useRef(0)
+  const analysisLayerRevealSequence = useRef(0)
   const instantTravelTimerRef = useRef()
   const instantTravelRevealTimerRef = useRef()
   const appShellRef = useRef(null)
   const hudRef = useRef(null)
   const { progress } = useProgress()
-  const ensureAudio = useSolarAudio({ enabled: soundEnabled, travelling })
+  const focusedTargetId = focusedSpacecraft ?? (shipFocused ? 'Ship' : focusedBody)
+  const availableAnalysis = getAnalysisTarget(focusedTargetId)
+  const activeAnalysis = analysisTargetId ? getAnalysisTarget(analysisTargetId) : null
+  const { ensureAudio, analysisAnalyserRef } = useSolarAudio({
+    enabled: soundEnabled,
+    travelling,
+    analysisSonification: analysisClosing ? null : activeAnalysis?.sonification ?? null,
+  })
 
   useEffect(() => {
     document.documentElement.lang = language
@@ -174,6 +188,17 @@ export default function App() {
     window.clearTimeout(instantTravelTimerRef.current)
     window.clearTimeout(instantTravelRevealTimerRef.current)
   }, [])
+
+  useEffect(() => {
+    if (
+      analysisTargetId
+      && (analysisTargetId !== focusedTargetId || travelling)
+    ) {
+      setAnalysisTargetId(null)
+      setAnalysisSectionId(null)
+      setAnalysisClosing(false)
+    }
+  }, [analysisTargetId, focusedTargetId, travelling])
 
   useEffect(() => {
     const shell = appShellRef.current
@@ -206,6 +231,44 @@ export default function App() {
   const toggleSound = () => {
     if (!soundEnabled) ensureAudio()
     setSoundEnabled((current) => !current)
+  }
+
+  const finishClosingAnalysis = () => {
+    setAnalysisTargetId(null)
+    setAnalysisSectionId(null)
+    setAnalysisClosing(false)
+  }
+
+  const closeAnalysis = () => {
+    if (!activeAnalysis || analysisClosing) return
+    if (activeAnalysis.type !== 'layered-body') {
+      finishClosingAnalysis()
+      return
+    }
+    setAnalysisClosing(true)
+  }
+
+  const toggleAnalysis = () => {
+    if (activeAnalysis) {
+      closeAnalysis()
+      return
+    }
+    if (!availableAnalysis) return
+
+    setAnalysisTargetId(focusedTargetId)
+    setAnalysisClosing(false)
+    setAnalysisSectionId(
+      availableAnalysis.defaultSectionId ?? availableAnalysis.sections[0]?.id ?? null,
+    )
+    setSettingsCollapsed(true)
+    setMinimapCollapsed(true)
+    setMobileTravelSpeedOpen(false)
+  }
+
+  const selectAnalysisSectionFromScene = (sectionId) => {
+    setAnalysisSectionId(sectionId)
+    analysisLayerRevealSequence.current += 1
+    setAnalysisLayerRevealRequestId(analysisLayerRevealSequence.current)
   }
 
   const selectBody = (bodyName) => {
@@ -293,7 +356,14 @@ export default function App() {
   }
 
   return (
-    <main ref={appShellRef} className="app-shell">
+    <main
+      ref={appShellRef}
+      className={[
+        'app-shell',
+        activeAnalysis && 'is-analysis-active',
+        analysisClosing && 'is-analysis-closing',
+      ].filter(Boolean).join(' ')}
+    >
       <Canvas
         camera={{ fov: 55, near: 0.000000001, far: 5000000 }}
         dpr={mobilePerformance ? 1.5 : [1, 2]}
@@ -311,10 +381,15 @@ export default function App() {
             travelling={travelling}
             shipFocused={shipFocused}
             focusedSpacecraft={focusedSpacecraft}
+            analysisConfig={activeAnalysis}
+            analysisClosing={analysisClosing}
+            analysisSectionId={analysisSectionId}
             settings={settings}
             mobilePerformance={mobilePerformance}
             onSelect={selectBody}
             onLabelSelect={selectBodyFromMinimap}
+            onAnalysisSectionSelect={selectAnalysisSectionFromScene}
+            onAnalysisCloseComplete={finishClosingAnalysis}
             onTravellingChange={setTravelling}
             instantTravelRequest={instantTravelRequest}
             cameraLookRequest={cameraLookRequest}
@@ -328,6 +403,21 @@ export default function App() {
       </Canvas>
 
       <LoadingScreen ready={sceneReady} progress={progress} text={text} />
+
+      {activeAnalysis && (
+        <AnalysisPanel
+          closing={analysisClosing}
+          config={activeAnalysis}
+          audioAnalyserRef={analysisAnalyserRef}
+          audioVisualizationActive={soundEnabled && Boolean(activeAnalysis.sonification)}
+          language={language}
+          layerRevealRequestId={analysisLayerRevealRequestId}
+          onClose={closeAnalysis}
+          onSelectSection={setAnalysisSectionId}
+          selectedSectionId={analysisSectionId}
+          text={text.analysis}
+        />
+      )}
 
       <MinimapPanel
         collapsed={minimapCollapsed}
@@ -459,6 +549,18 @@ export default function App() {
               >
                 <span aria-hidden="true">✦</span>
                 {text.instantTravel}
+              </button>
+            )}
+            {availableAnalysis && !travelling && !hasPendingTarget && (
+              <button
+                className={`analyze-button${activeAnalysis ? ' is-active' : ''}`}
+                type="button"
+                aria-pressed={Boolean(activeAnalysis)}
+                disabled={analysisClosing}
+                onClick={toggleAnalysis}
+              >
+                <span aria-hidden="true">◉</span>
+                {activeAnalysis ? text.analysis.closeMode : text.analysis.open}
               </button>
             )}
           </div>

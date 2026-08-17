@@ -1,0 +1,142 @@
+{
+  "targetId": "Earth",
+  "type": "layered-body",
+  "sonification": { "massEarths": 1, "densityKgM3": 5514, "rotationHours": 23.9345, "cycleDays": 365.256, "temperatureK": 288, "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html" },
+  "defaultSectionId": "mantle",
+  "title": {
+    "en": "Inside Earth",
+    "fr": "À l’intérieur de la Terre"
+  },
+  "summary": {
+    "en": "Earth is differentiated into rocky shells surrounding a metallic core. Layer thicknesses are shown to scale.",
+    "fr": "La Terre est différenciée en enveloppes rocheuses autour d’un noyau métallique. Les épaisseurs sont représentées à l’échelle."
+  },
+  "panelSections": [
+    {
+      "id": "key-facts",
+      "type": "facts",
+      "title": { "en": "Key facts", "fr": "Caractéristiques générales" },
+      "items": [
+    {
+      "id": "diameter",
+      "label": { "en": "Mean diameter", "fr": "Diamètre moyen" },
+      "value": { "en": "12,742 km", "fr": "12 742 km" }
+    },
+    {
+      "id": "mass",
+      "label": { "en": "Mass", "fr": "Masse" },
+      "value": { "en": "5.9722 × 10²⁴ kg", "fr": "5,9722 × 10²⁴ kg" }
+    },
+    {
+      "id": "surface-area",
+      "label": { "en": "Surface area", "fr": "Superficie" },
+      "value": { "en": "510.1 million km²", "fr": "510,1 millions de km²" }
+    },
+    {
+      "id": "solar-distance",
+      "label": { "en": "Mean distance from Sun", "fr": "Distance moyenne au Soleil" },
+      "value": { "en": "149.6 million km · 1 AU", "fr": "149,6 millions de km · 1 UA" }
+    },
+    {
+      "id": "orbital-period",
+      "label": { "en": "Orbital period", "fr": "Période orbitale" },
+      "value": { "en": "365.256 days", "fr": "365,256 jours" }
+    },
+    {
+      "id": "rotation-period",
+      "label": { "en": "Sidereal rotation", "fr": "Rotation sidérale" },
+      "value": { "en": "23 h 56 min 4 s", "fr": "23 h 56 min 4 s" }
+    },
+    {
+      "id": "mean-temperature",
+      "label": { "en": "Mean surface temperature", "fr": "Température moyenne en surface" },
+      "value": { "en": "About 15 °C", "fr": "Environ 15 °C" }
+    },
+    {
+      "id": "surface-gravity",
+      "label": { "en": "Surface gravity", "fr": "Gravité en surface" },
+      "value": { "en": "9.81 m/s²", "fr": "9,81 m/s²" }
+    },
+    {
+      "id": "axial-tilt",
+      "label": { "en": "Axial tilt", "fr": "Inclinaison de l’axe" },
+      "value": { "en": "23.44°", "fr": "23,44°" }
+    },
+    {
+      "id": "natural-satellites",
+      "label": { "en": "Natural satellites", "fr": "Satellites naturels" },
+      "value": { "en": "1 · Moon", "fr": "1 · Lune" }
+    },
+    {
+      "id": "atmosphere",
+      "label": { "en": "Atmosphere", "fr": "Atmosphère" },
+      "value": { "en": "78% N₂ · 21% O₂", "fr": "78 % N₂ · 21 % O₂" }
+    },
+    {
+      "id": "age",
+      "label": { "en": "Age", "fr": "Âge" },
+      "value": { "en": "About 4.54 billion years", "fr": "Environ 4,54 milliards d’années" }
+    }
+      ]
+    },
+    {
+      "id": "internal-layers",
+      "type": "layers",
+      "title": { "en": "Internal layers", "fr": "Couches internes" }
+    }
+  ],
+  "sections": [
+    {
+      "id": "crust",
+      "innerRadiusRatio": 0.989,
+      "outerRadiusRatio": 1,
+      "color": "#6ea4c7",
+      "labelPosition": [0.9, 0.62, 0.025],
+      "name": { "en": "Crust", "fr": "Croûte" },
+      "range": { "en": "5–70 km thick", "fr": "5 à 70 km d’épaisseur" },
+      "description": {
+        "en": "Earth’s thin, solid outer skin. Oceanic crust is mostly basaltic, while continental crust is thicker and richer in silica.",
+        "fr": "La fine enveloppe solide de la Terre. La croûte océanique est surtout basaltique, tandis que la croûte continentale est plus épaisse et plus riche en silice."
+      }
+    },
+    {
+      "id": "mantle",
+      "innerRadiusRatio": 0.546,
+      "outerRadiusRatio": 0.989,
+      "color": "#d96b37",
+      "labelPosition": [0.72, 0.27, 0.025],
+      "name": { "en": "Mantle", "fr": "Manteau" },
+      "range": { "en": "To 2,900 km depth", "fr": "Jusqu’à 2 900 km de profondeur" },
+      "description": {
+        "en": "A vast layer of hot silicate rock. It remains mostly solid, but flows slowly over geological time and drives plate tectonics through convection.",
+        "fr": "Une immense couche de roches silicatées chaudes. Elle reste principalement solide, mais s’écoule lentement à l’échelle géologique et alimente la tectonique des plaques par convection."
+      }
+    },
+    {
+      "id": "outer-core",
+      "innerRadiusRatio": 0.192,
+      "outerRadiusRatio": 0.546,
+      "color": "#f0a43a",
+      "labelPosition": [0.42, -0.08, 0.025],
+      "name": { "en": "Outer core", "fr": "Noyau externe" },
+      "range": { "en": "2,900–5,150 km depth", "fr": "2 900 à 5 150 km de profondeur" },
+      "description": {
+        "en": "A liquid iron-and-nickel layer. Its moving conductive metal generates most of Earth’s magnetic field.",
+        "fr": "Une couche liquide de fer et de nickel. Les mouvements de ce métal conducteur génèrent l’essentiel du champ magnétique terrestre."
+      }
+    },
+    {
+      "id": "inner-core",
+      "innerRadiusRatio": 0,
+      "outerRadiusRatio": 0.192,
+      "color": "#ffe3a1",
+      "labelPosition": [0.18, -0.38, 0.025],
+      "name": { "en": "Inner core", "fr": "Noyau interne" },
+      "range": { "en": "1,221 km radius", "fr": "1 221 km de rayon" },
+      "description": {
+        "en": "The solid central sphere, composed mainly of iron and nickel. Immense pressure keeps it solid despite temperatures comparable to the Sun’s surface.",
+        "fr": "La sphère centrale solide, composée surtout de fer et de nickel. Une pression immense la maintient solide malgré des températures comparables à la surface du Soleil."
+      }
+    }
+  ]
+}

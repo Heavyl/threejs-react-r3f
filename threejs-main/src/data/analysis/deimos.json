@@ -1,0 +1,108 @@
+{
+  "targetId": "Deimos",
+  "type": "layered-body",
+  "sonification": { "massEarths": 0.000000000248, "densityKgM3": 1471, "rotationHours": 30.312, "cycleDays": 1.2624, "temperatureK": 233, "source": "https://science.nasa.gov/mars/moons/deimos/" },
+  "defaultSectionId": "porous-interior",
+  "cutawayRadiusRatio": 0.82,
+  "title": { "en": "Inside Deimos", "fr": "À l’intérieur de Déimos" },
+  "summary": {
+    "en": "Deimos is Mars’ smaller and smoother-looking moon. Its interior has not been directly measured; the displayed structure is a schematic interpretation.",
+    "fr": "Déimos est la plus petite des lunes de Mars et paraît plus lisse. Son intérieur n’a pas été mesuré directement ; la structure affichée est une interprétation schématique."
+  },
+  "sources": [
+    "https://science.nasa.gov/mars/moons/deimos/",
+    "https://science.nasa.gov/mars/moons/facts/"
+  ],
+  "panelSections": [
+    {
+      "id": "key-facts",
+      "type": "facts",
+      "title": { "en": "Key facts", "fr": "Caractéristiques générales" },
+      "items": [
+        {
+          "id": "dimensions",
+          "label": { "en": "Dimensions", "fr": "Dimensions" },
+          "value": { "en": "15 × 12 × 11 km", "fr": "15 × 12 × 11 km" }
+        },
+        {
+          "id": "mass",
+          "label": { "en": "Mass", "fr": "Masse" },
+          "value": { "en": "About 1.48 × 10¹⁵ kg", "fr": "Environ 1,48 × 10¹⁵ kg" }
+        },
+        {
+          "id": "mars-distance",
+          "label": { "en": "Distance from Mars’ center", "fr": "Distance au centre de Mars" },
+          "value": { "en": "23,463 km", "fr": "23 463 km" }
+        },
+        {
+          "id": "orbital-period",
+          "label": { "en": "Orbit and rotation", "fr": "Orbite et rotation" },
+          "value": { "en": "30 h 18 min · synchronous", "fr": "30 h 18 min · synchrone" }
+        },
+        {
+          "id": "density",
+          "label": { "en": "Mean density", "fr": "Densité moyenne" },
+          "value": { "en": "About 1.49 g/cm³", "fr": "Environ 1,49 g/cm³" }
+        },
+        {
+          "id": "gravity",
+          "label": { "en": "Surface gravity", "fr": "Gravité en surface" },
+          "value": { "en": "About 0.003 m/s²", "fr": "Environ 0,003 m/s²" }
+        },
+        {
+          "id": "temperature",
+          "label": { "en": "Estimated temperature", "fr": "Température estimée" },
+          "value": { "en": "About −112 to −4 °C", "fr": "Environ −112 à −4 °C" }
+        },
+        {
+          "id": "atmosphere",
+          "label": { "en": "Atmosphere", "fr": "Atmosphère" },
+          "value": { "en": "None", "fr": "Aucune" }
+        },
+        {
+          "id": "regolith-depth",
+          "label": { "en": "Regolith depth", "fr": "Épaisseur du régolithe" },
+          "value": { "en": "Possibly up to 100 m", "fr": "Peut-être jusqu’à 100 m" }
+        },
+        {
+          "id": "discovery",
+          "label": { "en": "Discovery", "fr": "Découverte" },
+          "value": { "en": "Asaph Hall · 1877", "fr": "Asaph Hall · 1877" }
+        }
+      ]
+    },
+    {
+      "id": "internal-structure",
+      "type": "layers",
+      "title": { "en": "Probable internal structure", "fr": "Structure interne probable" }
+    }
+  ],
+  "sections": [
+    {
+      "id": "regolith",
+      "innerRadiusRatio": 0.984,
+      "outerRadiusRatio": 1,
+      "color": "#9a8772",
+      "labelPosition": [0.75, 0.54, 0.025],
+      "name": { "en": "Thick regolith", "fr": "Régolithe épais" },
+      "range": { "en": "Possibly up to about 100 m", "fr": "Peut-être jusqu’à environ 100 m" },
+      "description": {
+        "en": "A deep layer of loose impact debris partly fills craters and gives Deimos its smoother appearance. Escaped ejecta can remain around Mars before settling back onto the moon.",
+        "fr": "Une couche profonde de débris d’impact meubles comble partiellement les cratères et donne à Déimos son aspect plus lisse. Les éjectas peuvent rester autour de Mars avant de retomber sur la lune."
+      }
+    },
+    {
+      "id": "porous-interior",
+      "innerRadiusRatio": 0,
+      "outerRadiusRatio": 0.984,
+      "color": "#554b43",
+      "labelPosition": [0.34, -0.12, 0.025],
+      "name": { "en": "Porous interior", "fr": "Intérieur poreux" },
+      "range": { "en": "Carbon-rich rock, voids, possible ice", "fr": "Roche carbonée, vides, glace possible" },
+      "description": {
+        "en": "The low bulk density suggests a porous body made of dark, carbon-rich material, potentially mixed with ice. No differentiated core or mantle has been confirmed.",
+        "fr": "La faible densité globale suggère un corps poreux constitué de matériau sombre riche en carbone, potentiellement mêlé de glace. Aucun noyau ni manteau différencié n’a été confirmé."
+      }
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "targetId": "Sun",
+  "type": "layered-body",
+  "sonification": { "massEarths": 332900, "densityKgM3": 1408, "rotationHours": 609.12, "cycleDays": 4163.4, "temperatureK": 5772, "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html" },
+  "defaultSectionId": "radiative-zone",
+  "title": { "en": "Inside the Sun", "fr": "À l’intérieur du Soleil" },
+  "summary": {
+    "en": "The Sun is a self-gravitating sphere of plasma whose core converts hydrogen into helium and supplies nearly all energy received by the solar system.",
+    "fr": "Le Soleil est une sphère de plasma maintenue par sa gravité, dont le noyau transforme l’hydrogène en hélium et fournit presque toute l’énergie reçue par le Système solaire."
+  },
+  "sources": ["https://science.nasa.gov/sun/facts/"],
+  "panelSections": [
+    {
+      "id": "key-facts",
+      "type": "facts",
+      "title": { "en": "Key facts", "fr": "Caractéristiques générales" },
+      "items": [
+        { "id": "type", "label": { "en": "Star type", "fr": "Type d’étoile" }, "value": { "en": "G2 V yellow dwarf", "fr": "Naine jaune G2 V" } },
+        { "id": "diameter", "label": { "en": "Diameter", "fr": "Diamètre" }, "value": { "en": "About 1.39 million km", "fr": "Environ 1,39 million de km" } },
+        { "id": "mass", "label": { "en": "Mass", "fr": "Masse" }, "value": { "en": "1.989 × 10³⁰ kg", "fr": "1,989 × 10³⁰ kg" } },
+        { "id": "age", "label": { "en": "Age", "fr": "Âge" }, "value": { "en": "About 4.6 billion years", "fr": "Environ 4,6 milliards d’années" } },
+        { "id": "earth-distance", "label": { "en": "Mean distance from Earth", "fr": "Distance moyenne à la Terre" }, "value": { "en": "149.6 million km · 1 AU", "fr": "149,6 millions de km · 1 UA" } },
+        { "id": "rotation", "label": { "en": "Differential rotation", "fr": "Rotation différentielle" }, "value": { "en": "25 days equator · 36 days poles", "fr": "25 jours à l’équateur · 36 aux pôles" } },
+        { "id": "photosphere-temperature", "label": { "en": "Photosphere temperature", "fr": "Température de la photosphère" }, "value": { "en": "About 5,500 °C", "fr": "Environ 5 500 °C" } },
+        { "id": "core-temperature", "label": { "en": "Core temperature", "fr": "Température du noyau" }, "value": { "en": "About 15 million °C", "fr": "Environ 15 millions °C" } },
+        { "id": "composition", "label": { "en": "Main composition", "fr": "Composition principale" }, "value": { "en": "Hydrogen and helium", "fr": "Hydrogène et hélium" } },
+        { "id": "system-mass", "label": { "en": "Solar system mass", "fr": "Masse du Système solaire" }, "value": { "en": "About 99.8%", "fr": "Environ 99,8 %" } }
+      ]
+    },
+    { "id": "internal-layers", "type": "layers", "title": { "en": "Internal regions", "fr": "Régions internes" } }
+  ],
+  "sections": [
+    {
+      "id": "core", "innerRadiusRatio": 0, "outerRadiusRatio": 0.25, "color": "#fff0a0", "labelPosition": [0.18, -0.34, 0.025],
+      "name": { "en": "Core", "fr": "Noyau" }, "range": { "en": "Center to about 25% of the radius", "fr": "Du centre à environ 25 % du rayon" },
+      "description": { "en": "The fusion engine of the Sun. Extreme pressure and a temperature near 15 million °C allow hydrogen nuclei to combine into helium.", "fr": "Le moteur de fusion du Soleil. La pression extrême et une température proche de 15 millions °C permettent aux noyaux d’hydrogène de fusionner en hélium." }
+    },
+    {
+      "id": "radiative-zone", "innerRadiusRatio": 0.25, "outerRadiusRatio": 0.7, "color": "#ffc34d", "labelPosition": [0.49, -0.02, 0.025],
+      "name": { "en": "Radiative zone", "fr": "Zone radiative" }, "range": { "en": "About 25–70% of the radius", "fr": "Environ 25 à 70 % du rayon" },
+      "description": { "en": "Energy moves outward mainly as radiation. Photons are repeatedly absorbed and re-emitted, taking an extremely long path toward the surface.", "fr": "L’énergie progresse principalement par rayonnement. Les photons sont absorbés et réémis d’innombrables fois, suivant un très long chemin vers la surface." }
+    },
+    {
+      "id": "convective-zone", "innerRadiusRatio": 0.7, "outerRadiusRatio": 0.995, "color": "#f28a2e", "labelPosition": [0.75, 0.33, 0.025],
+      "name": { "en": "Convection zone", "fr": "Zone convective" }, "range": { "en": "Outer 30% of the solar radius", "fr": "30 % externes du rayon solaire" },
+      "description": { "en": "Large cells of hot plasma rise, cool, and sink. This circulation transports energy to the visible surface and contributes to solar magnetic activity.", "fr": "De vastes cellules de plasma chaud montent, refroidissent puis redescendent. Cette circulation transporte l’énergie vers la surface visible et contribue à l’activité magnétique." }
+    },
+    {
+      "id": "photosphere", "innerRadiusRatio": 0.995, "outerRadiusRatio": 1, "color": "#ffd96a", "labelPosition": [0.9, 0.63, 0.025],
+      "name": { "en": "Photosphere", "fr": "Photosphère" }, "range": { "en": "Visible layer · about 400 km thick", "fr": "Couche visible · environ 400 km" },
+      "description": { "en": "The thin layer usually called the Sun’s surface. Most visible sunlight escapes from this region, although the Sun has no solid boundary.", "fr": "La fine couche généralement appelée surface du Soleil. La majeure partie de la lumière visible s’en échappe, bien que le Soleil n’ait aucune frontière solide." }
+    }
+  ]
+}
