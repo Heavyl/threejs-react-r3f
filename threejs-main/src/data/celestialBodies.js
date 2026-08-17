@@ -55,7 +55,8 @@ export const BODY_BY_NAME = new Map(CELESTIAL_BODIES.map((body) => [body.name, b
 
 export const SKYBOX_BASE_PATH = ASSET_BASE_URL + 'textures/sky/'
 export const SKYBOX_FACE_FILES = Object.freeze([
-  'px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png',
+  // Three.js swaps the X axis when adapting cubemaps to its right-handed world.
+  'nx.jpg', 'px.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg',
 ])
 
 export const TEXTURE_PATHS = Object.freeze({

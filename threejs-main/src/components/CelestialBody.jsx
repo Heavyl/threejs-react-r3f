@@ -126,7 +126,7 @@ export function CelestialBody({
   const surfaceSegments = mobilePerformance ? (body.emissive ? 64 : 48) : (body.emissive ? 64 : 48)
   const atmosphereSegments = mobilePerformance ? 24 : 40
   const ringSegments = mobilePerformance ? 96 : 160
-  const labelHeight = body.renderRadius + Math.max(0.45, body.renderRadius * 0.13)
+  const labelHeight = body.renderRadius + Math.max(0.15, body.renderRadius * 0.13)
 
   return (
     <group ref={bodyRef}>
